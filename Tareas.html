@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <link rel="stylesheet" href="vista/style.css">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pagina de Probabilidad y Estadistica</title>
+    <script src="funciones/principal.js" defer></script>
+</head>
+
+
+<body>
+
+    <header>
+        <h1>Tareas y Proyectos</h1>
+        <h2>Ricardo Javier Hernandez Aguilera</h2>
+    </header>
+<nav>
+    <ul>
+<li><a href="index.html">Inicio</a></li>
+  <li><a href="Temario.html">Temario</a></li>
+ <li><a href="Tareas.html">Tareas</a></li>
+
+
+
+    </ul>
+
+
+</nav>
+
+
+
+
+<main>
+
+    <section>
+      <h2>Proyecto 1: Consumo eléctrico por estado</h2>
+      <p>
+       Datos y grafica de consumo electrico por estado en México
+      </p>
+
+      <label for="csvConsumo">Archivo pdf </label>
+      <input id="csvConsumo" type="file" accept=".csv" />
+
+      <button id="btnGraficar" type="button">Graficar</button>
+
+      <div id="estadoConsumoSalida" aria-live="polite"></div>
+      <canvas id="graficaConsumo" width="900" height="420"></canvas>
+    </section>
+
+    <section>
+      <h2>Proyecto 2: Lector de recibo PDF + estadísticas de la clase</h2>
+      <p>
+        Lector de luz, moda , mediana y varianza de los consumos registrados en los recibos PDF
+      </p>
+
+      <label for="pdfRecibo">Recibo PDF:</label>
+      <input id="pdfRecibo" type="file" accept="application/pdf" />
+
+      <button id="btnProcesarPdf" type="button">Procesar PDF</button>
+      <button id="btnLimpiarDatos" type="button">Limpiar datos guardados</button>
+
+      <h3>Datos extraídos del recibo</h3>
+      <pre id="salidaPdf"></pre>
+
+      <h3>Estadísticas (acumuladas)</h3>
+      <ul>
+        <li><strong>Mediana:</strong> <span id="statMediana">—</span></li>
+        <li><strong>Moda:</strong> <span id="statModa">—</span></li>
+        <li><strong>Varianza:</strong> <span id="statVarianza">—</span></li>
+      </ul>
+
+      <p><strong>Muestras acumuladas:</strong> <span id="statN">0</span></p>
+    </section>
+
+</main>
+
+
+</body>
+
+
+</html>
