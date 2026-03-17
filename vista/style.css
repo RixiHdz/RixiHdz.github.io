@@ -1,4 +1,270 @@
-body{
-    background-color: white;
-   
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: Arial, sans-serif;
+    background-color: #f5f5f5;
+    color: #1a1a1a;
+}
+
+/* ── HEADER ── */
+header {
+    background: #ffffff;
+    border-bottom: 1px solid #e0e0e0;
+    padding: 1.5rem 2rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 1rem;
+}
+
+.header-info h1 {
+    font-size: 20px;
+    font-weight: 600;
+}
+
+.header-info p {
+    font-size: 13px;
+    color: #666;
+    margin-top: 4px;
+}
+
+.header-badge {
+    background: #f5f5f5;
+    border: 1px solid #e0e0e0;
+    border-radius: 12px;
+    padding: 0.5rem 1rem;
+    font-size: 13px;
+    text-align: right;
+}
+
+.header-badge span {
+    display: block;
+    color: #888;
+    font-size: 12px;
+}
+
+.header-badge strong {
+    font-weight: 600;
+}
+
+/* ── NAV ── */
+nav {
+    background: #ffffff;
+    border-bottom: 1px solid #e0e0e0;
+    padding: 0 2rem;
+    display: flex;
+    gap: 0;
+}
+
+nav button {
+    background: none;
+    border: none;
+    border-bottom: 2px solid transparent;
+    padding: 0.75rem 1rem;
+    font-size: 14px;
+    color: #888;
+    cursor: pointer;
+    font-family: Arial, sans-serif;
+    transition: color 0.2s;
+}
+
+nav button:hover {
+    color: #1a1a1a;
+}
+
+nav button.activo {
+    color: #1a1a1a;
+    border-bottom-color: #1a1a1a;
+    font-weight: 600;
+}
+
+/* ── MAIN ── */
+main {
+    padding: 2rem;
+    max-width: 900px;
+    margin: 0 auto;
+}
+
+/* ── SECCIONES (mostrar/ocultar) ── */
+.seccion {
+    display: none;
+}
+
+.seccion.visible {
+    display: block;
+}
+
+/* ── BIENVENIDA ── */
+.bienvenida {
+    background: #ffffff;
+    border: 1px solid #e0e0e0;
+    border-radius: 12px;
+    padding: 2rem;
+    margin-bottom: 1.5rem;
+}
+
+.bienvenida h2 {
+    font-size: 18px;
+    font-weight: 600;
+    margin-bottom: 0.5rem;
+}
+
+.bienvenida p {
+    font-size: 14px;
+    color: #555;
+    line-height: 1.7;
+}
+
+/* ── CARDS GRID ── */
+.cards-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 1rem;
+    margin-top: 1.5rem;
+}
+
+.card {
+    background: #ffffff;
+    border: 1px solid #e0e0e0;
+    border-radius: 12px;
+    padding: 1.25rem;
+}
+
+.card-icon {
+    width: 36px;
+    height: 36px;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 16px;
+    margin-bottom: 0.75rem;
+}
+
+.icono-azul  { background: #dbeafe; }
+.icono-verde { background: #dcfce7; }
+.icono-amarillo { background: #fef9c3; }
+
+.card h3 {
+    font-size: 15px;
+    font-weight: 600;
+    margin-bottom: 4px;
+}
+
+.card p {
+    font-size: 13px;
+    color: #666;
+}
+
+/* ── TEMARIO ── */
+.lista-temas {
+    list-style: none;
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.tema-item {
+    background: #ffffff;
+    border: 1px solid #e0e0e0;
+    border-radius: 8px;
+    padding: 1rem 1.25rem;
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+}
+
+.tema-num {
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    background: #f0f0f0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 12px;
+    font-weight: 600;
+    flex-shrink: 0;
+}
+
+.tema-titulo {
+    font-size: 14px;
+    font-weight: 600;
+}
+
+.tema-sub {
+    font-size: 12px;
+    color: #888;
+    margin-top: 2px;
+}
+
+/* ── TAREAS ── */
+.tareas-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1rem;
+}
+
+.tareas-header h2 {
+    font-size: 18px;
+    font-weight: 600;
+}
+
+.tarea-card {
+    background: #ffffff;
+    border: 1px solid #e0e0e0;
+    border-radius: 12px;
+    padding: 1.25rem;
+    margin-bottom: 0.75rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.tarea-info h3 {
+    font-size: 14px;
+    font-weight: 600;
+    margin-bottom: 4px;
+}
+
+.tarea-info p {
+    font-size: 12px;
+    color: #888;
+}
+
+.badge {
+    font-size: 11px;
+    padding: 4px 12px;
+    border-radius: 99px;
+    font-weight: 600;
+}
+
+.badge-pendiente {
+    background: #fef9c3;
+    color: #854d0e;
+}
+
+.badge-entregada {
+    background: #dcfce7;
+    color: #166534;
+}
+
+/* ── FOOTER ── */
+footer {
+    text-align: center;
+    padding: 1.5rem;
+    font-size: 12px;
+    color: #888;
+    border-top: 1px solid #e0e0e0;
+    margin-top: 2rem;
+}
+
+footer p + p {
+    margin-top: 4px;
 }
