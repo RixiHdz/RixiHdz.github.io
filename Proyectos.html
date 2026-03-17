@@ -6,6 +6,7 @@
     <title>Proyectos — Probabilidad y Estadística</title>
     <link rel="stylesheet" href="vista/style.css">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
     <style>
         .zona-carga {
@@ -23,6 +24,7 @@
         .zona-carga .icono-carga { font-size: 2.5rem; margin-bottom: 0.75rem; }
         .zona-carga h3 { font-size: 16px; font-weight: 600; margin-bottom: 0.25rem; }
         .zona-carga p { font-size: 13px; color: #888; }
+
         .btn-subir {
             display: inline-block;
             margin-top: 1rem;
@@ -47,6 +49,7 @@
             margin-bottom: 1.5rem;
         }
         .resultado-header h2 { font-size: 18px; font-weight: 600; }
+
         .btn-nuevo {
             background: none;
             border: 1px solid #e0e0e0;
@@ -78,7 +81,7 @@
             letter-spacing: 0.05em;
             margin-bottom: 0.4rem;
         }
-        .dato-valor { font-size: 20px; font-weight: 600; color: #1a1a1a; }
+        .dato-valor { font-size: 18px; font-weight: 600; color: #1a1a1a; }
         .dato-valor.verde { color: #166534; }
         .dato-valor.azul  { color: #1e40af; }
 
@@ -117,7 +120,15 @@
         tr:last-child td { border-bottom: none; }
         tr.fila-actual td { font-weight: 600; background: #f0fdf4; }
 
-        #cargando { display: none; text-align: center; padding: 2rem; }
+        #cargando {
+            display: none;
+            background: #ffffff;
+            border: 1px solid #e0e0e0;
+            border-radius: 12px;
+            padding: 2rem;
+            text-align: center;
+            margin-bottom: 2rem;
+        }
         .spinner {
             width: 32px;
             height: 32px;
@@ -128,6 +139,27 @@
             margin: 0 auto 1rem;
         }
         @keyframes girar { to { transform: rotate(360deg); } }
+
+        .progreso-texto {
+            font-size: 13px;
+            color: #666;
+            margin-top: 0.5rem;
+        }
+        .barra-progreso {
+            width: 100%;
+            height: 6px;
+            background: #f0f0f0;
+            border-radius: 99px;
+            margin-top: 1rem;
+            overflow: hidden;
+        }
+        .barra-progreso-fill {
+            height: 100%;
+            background: #1a1a1a;
+            border-radius: 99px;
+            transition: width 0.3s;
+            width: 0%;
+        }
 
         .alerta-error {
             display: none;
@@ -166,7 +198,7 @@
 
         <div class="bienvenida" style="margin-bottom: 1.5rem;">
             <h2>Lector de Recibo CFE</h2>
-            <p>Sube tu recibo de luz en PDF. El sistema extraerá automáticamente el nombre, fecha límite de pago, total a pagar y el historial de consumo, y generará una gráfica de tu consumo histórico.</p>
+            <p>Sube tu recibo de luz en PDF. El sistema usará OCR para leer la imagen y extraer automáticamente el nombre, fecha límite de pago, total a pagar y el historial de consumo.</p>
         </div>
 
         <div class="zona-carga" id="zonaCarga">
@@ -181,11 +213,15 @@
 
         <div id="cargando">
             <div class="spinner"></div>
-            <p style="font-size:14px; color:#666;">Leyendo el PDF...</p>
+            <p style="font-size:14px; font-weight:600;">Procesando recibo con OCR...</p>
+            <p class="progreso-texto" id="progresoTexto">Iniciando...</p>
+            <div class="barra-progreso">
+                <div class="barra-progreso-fill" id="barraFill"></div>
+            </div>
         </div>
 
         <div class="alerta-error" id="alertaError">
-            ⚠️ No se pudieron extraer todos los datos del PDF. Asegúrate de que sea un recibo de CFE válido.
+            ⚠️ Ocurrió un error al procesar el PDF. Intenta de nuevo.
         </div>
 
         <div id="resultado">
@@ -197,7 +233,7 @@
             <div class="datos-grid">
                 <div class="dato-card">
                     <div class="dato-label">Nombre</div>
-                    <div class="dato-valor azul" id="datNombre" style="font-size:15px;">—</div>
+                    <div class="dato-valor azul" id="datNombre" style="font-size:14px;">—</div>
                 </div>
                 <div class="dato-card">
                     <div class="dato-label">Total a pagar</div>
@@ -205,7 +241,7 @@
                 </div>
                 <div class="dato-card">
                     <div class="dato-label">Límite de pago</div>
-                    <div class="dato-valor" id="datFecha" style="font-size:15px;">—</div>
+                    <div class="dato-valor" id="datFecha" style="font-size:14px;">—</div>
                 </div>
                 <div class="dato-card">
                     <div class="dato-label">Consumo actual (kWh)</div>
@@ -276,86 +312,133 @@
         });
 
         async function procesarPDF(archivo) {
-            mostrarCargando(true);
-            ocultarError();
+            zonaCarga.style.display = 'none';
+            document.getElementById('cargando').style.display = 'block';
+            document.getElementById('alertaError').style.display = 'none';
+
             try {
+                actualizarProgreso('Cargando PDF...', 5);
+
                 const arrayBuffer = await archivo.arrayBuffer();
                 const pdf = await pdfjsLib.getDocument({ data: arrayBuffer }).promise;
 
-                let textoCompleto = '';
-                for (let i = 1; i <= pdf.numPages; i++) {
-                    const pagina = await pdf.getPage(i);
-                    const contenido = await pagina.getTextContent();
-                    const textoPagina = contenido.items.map(item => item.str).join(' ');
-                    textoCompleto += textoPagina + '\n';
-                }
+                actualizarProgreso('Convirtiendo páginas a imagen...', 15);
 
-                const datos = extraerDatos(textoCompleto);
+                // Convertir primera página a canvas (alta resolución para mejor OCR)
+                const pagina = await pdf.getPage(1);
+                const escala = 2.5;
+                const viewport = pagina.getViewport({ scale: escala });
+                const canvas = document.createElement('canvas');
+                canvas.width  = viewport.width;
+                canvas.height = viewport.height;
+                const ctx = canvas.getContext('2d');
+                await pagina.render({ canvasContext: ctx, viewport }).promise;
+
+                actualizarProgreso('Ejecutando OCR (esto tarda ~30 segundos)...', 30);
+
+                // OCR con Tesseract
+                const resultado = await Tesseract.recognize(canvas, 'spa', {
+                    logger: m => {
+                        if (m.status === 'recognizing text') {
+                            const pct = Math.round(30 + m.progress * 60);
+                            actualizarProgreso(`Reconociendo texto: ${Math.round(m.progress * 100)}%`, pct);
+                        }
+                    }
+                });
+
+                actualizarProgreso('Extrayendo datos...', 92);
+
+                const texto = resultado.data.text;
+                console.log('Texto OCR:', texto); // útil para depurar
+
+                const datos = extraerDatos(texto);
                 mostrarResultados(datos);
+
             } catch (err) {
                 console.error(err);
-                mostrarError();
+                document.getElementById('alertaError').style.display = 'block';
+                zonaCarga.style.display = 'block';
             } finally {
-                mostrarCargando(false);
+                document.getElementById('cargando').style.display = 'none';
             }
         }
 
+        function actualizarProgreso(texto, porcentaje) {
+            document.getElementById('progresoTexto').textContent = texto;
+            document.getElementById('barraFill').style.width = porcentaje + '%';
+        }
+
         function extraerDatos(texto) {
+            const lineas = texto.split('\n').map(l => l.trim()).filter(l => l.length > 0);
             const datos = {
                 nombre: '', total: '', fechaLimite: '',
                 kwh: '', periodo: '', noServicio: '', historial: []
             };
 
-            const regNombre = /([A-ZÁÉÍÓÚÑ]{2,}\s+[A-ZÁÉÍÓÚÑ]{2,}(?:\s+[A-ZÁÉÍÓÚÑ]{2,})?)/;
-            const matchNombre = texto.match(regNombre);
-            if (matchNombre) datos.nombre = matchNombre[1].trim();
+            // Nombre — línea en MAYÚSCULAS al inicio (antes de la dirección)
+            for (let i = 0; i < Math.min(lineas.length, 10); i++) {
+                const linea = lineas[i];
+                if (/^[A-ZÁÉÍÓÚÑ\s]{8,}$/.test(linea) && linea.split(' ').length >= 2) {
+                    datos.nombre = linea.trim();
+                    break;
+                }
+            }
 
+            // Total a pagar — busca $NNN o $ NNN
             const regTotal = /\$\s*(\d{1,6}(?:[.,]\d{2})?)/;
             const matchTotal = texto.match(regTotal);
             if (matchTotal) datos.total = '$' + matchTotal[1];
 
-            const regFecha = /L[IÍ]MITE\s+DE\s+PAGO[:\s]*([0-9]{1,2}\s+[A-ZÁÉÍÓÚÑ]{3,}\s+\d{2,4})/i;
+            // Límite de pago
+            const regFecha = /L[IÍ1]MITE\s+DE\s+PAGO[:\s]*(\d{1,2}\s+[A-ZÁÉÍÓÚÑ]{3,}\s+\d{2,4})/i;
             const matchFecha = texto.match(regFecha);
             if (matchFecha) datos.fechaLimite = matchFecha[1].trim();
 
-            const regServicio = /NO\.?\s*(?:DE\s*)?SERVICIO[:\s]*([0-9]{8,15})/i;
+            // No. de servicio
+            const regServicio = /(?:NO\.?\s*(?:DE\s*)?SERVICIO|SERVICIO)[:\s]*([0-9]{8,15})/i;
             const matchServicio = texto.match(regServicio);
             if (matchServicio) datos.noServicio = matchServicio[1];
 
-            const regPeriodo = /PERIODO\s+FACTURADO[:\s]*([0-9]{1,2}\s+[A-ZÁÉÍÓÚÑ]{3}\s+\d{2}[\s\-]+[0-9]{1,2}\s+[A-ZÁÉÍÓÚÑ]{3}\s+\d{2})/i;
+            // Periodo facturado
+            const regPeriodo = /PERIODO\s+FACTURADO[:\s]*([^\n]{5,30})/i;
             const matchPeriodo = texto.match(regPeriodo);
             if (matchPeriodo) datos.periodo = matchPeriodo[1].trim();
 
-            const regKwh = /Energ[ií]a\s*\(kWh\)[^0-9]*([0-9]{2,4})/i;
+            // kWh — busca número después de "Energía (kWh)"
+            const regKwh = /Energ[i1í][ao]?\s*\(?kWh\)?[^\d]*(\d{2,4})/i;
             const matchKwh = texto.match(regKwh);
             if (matchKwh) datos.kwh = matchKwh[1];
 
-            const regHistorial = /del?\s+(\d{1,2}\s+[A-Za-záéíóúÁÉÍÓÚÑñ]{3}\.?\s+\d{2})\s+al?\s+(\d{1,2}\s+[A-Za-záéíóúÁÉÍÓÚÑñ]{3}\.?\s+\d{2})\s+(\d{2,4})\s+\$?([\d,]+(?:\.\d{2})?)/gi;
+            // Historial — patrón: "del DD MMM AA al DD MMM AA  NNN  $NNN"
+            const regHistorial = /del?\s+(\d{1,2}\s+[A-Za-záéíóúÁÉÍÓÚÑñ]{3}\.?\s*\d{2})\s+al?\s+(\d{1,2}\s+[A-Za-záéíóúÁÉÍÓÚÑñ]{3}\.?\s*\d{2})\s+(\d{2,4})\s+\$?([\d,]+(?:\.\d{2})?)/gi;
             let matchH;
             while ((matchH = regHistorial.exec(texto)) !== null) {
                 datos.historial.push({
-                    periodo: `${matchH[1]} - ${matchH[2]}`,
-                    kwh: parseInt(matchH[3]),
+                    periodo: `${matchH[1].trim()} - ${matchH[2].trim()}`,
+                    kwh:     parseInt(matchH[3]),
                     importe: '$' + matchH[4]
                 });
             }
 
+            // Fallback si no encontró historial
             if (datos.historial.length === 0 && datos.kwh) {
-                datos.historial = [
-                    { periodo: datos.periodo || 'Periodo actual', kwh: parseInt(datos.kwh) || 0, importe: datos.total }
-                ];
+                datos.historial = [{
+                    periodo: datos.periodo || 'Periodo actual',
+                    kwh:     parseInt(datos.kwh) || 0,
+                    importe: datos.total
+                }];
             }
 
             return datos;
         }
 
         function mostrarResultados(datos) {
-            document.getElementById('datNombre').textContent   = datos.nombre       || 'No encontrado';
-            document.getElementById('datTotal').textContent    = datos.total        || 'No encontrado';
-            document.getElementById('datFecha').textContent    = datos.fechaLimite  || 'No encontrado';
+            document.getElementById('datNombre').textContent   = datos.nombre      || 'No encontrado';
+            document.getElementById('datTotal').textContent    = datos.total       || 'No encontrado';
+            document.getElementById('datFecha').textContent    = datos.fechaLimite || 'No encontrado';
             document.getElementById('datKwh').textContent      = datos.kwh ? datos.kwh + ' kWh' : 'No encontrado';
-            document.getElementById('datPeriodo').textContent  = datos.periodo      || 'No encontrado';
-            document.getElementById('datServicio').textContent = datos.noServicio   || 'No encontrado';
+            document.getElementById('datPeriodo').textContent  = datos.periodo     || 'No encontrado';
+            document.getElementById('datServicio').textContent = datos.noServicio  || 'No encontrado';
 
             const tbody = document.getElementById('tablaHistorial');
             tbody.innerHTML = '';
@@ -375,14 +458,13 @@
             }
 
             construirGrafica(datos.historial);
-            zonaCarga.style.display = 'none';
             document.getElementById('resultado').style.display = 'block';
         }
 
         function construirGrafica(historial) {
             if (graficaInstancia) { graficaInstancia.destroy(); graficaInstancia = null; }
 
-            const ctx = document.getElementById('graficaConsumo').getContext('2d');
+            const ctx      = document.getElementById('graficaConsumo').getContext('2d');
             const etiquetas = historial.map(h => h.periodo);
             const valores   = historial.map(h => h.kwh);
             const promedio  = valores.length > 0
@@ -419,7 +501,7 @@
                         legend: { position: 'top' },
                         tooltip: {
                             callbacks: {
-                                label: ctx => ` ${ctx.dataset.label}: ${ctx.parsed.y} kWh`
+                                label: ctx => ` ${ctx.parsed.y} kWh`
                             }
                         }
                     },
@@ -431,17 +513,6 @@
             });
         }
 
-        function mostrarCargando(estado) {
-            document.getElementById('cargando').style.display = estado ? 'block' : 'none';
-            zonaCarga.style.display = estado ? 'none' : 'block';
-        }
-        function mostrarError() {
-            document.getElementById('alertaError').style.display = 'block';
-            zonaCarga.style.display = 'block';
-        }
-        function ocultarError() {
-            document.getElementById('alertaError').style.display = 'none';
-        }
         function reiniciar() {
             document.getElementById('resultado').style.display = 'none';
             document.getElementById('alertaError').style.display = 'none';
