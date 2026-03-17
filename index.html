@@ -21,114 +21,43 @@
     </header>
 
     <nav>
-        <button class="activo" onclick="mostrarSeccion('inicio', this)">Inicio</button>
-        <button onclick="mostrarSeccion('temario', this)">Temario</button>
-        <button onclick="mostrarSeccion('tareas', this)">Tareas</button>
+        <a href="index.html" class="activo">Inicio</a>
+        <a href="Temario.html">Temario</a>
+        <a href="Tareas.html">Tareas</a>
     </nav>
 
     <main>
-
-        <!-- SECCIÓN INICIO -->
-        <div id="inicio" class="seccion visible">
-            <div class="bienvenida">
-                <h2>Bienvenido a mi página de la materia</h2>
-                <p>Aquí encontrarás el temario del curso, mis tareas entregadas y proyectos desarrollados durante el semestre. Profesor: J. Jesús Rico Melgoza.</p>
-            </div>
-            <div class="cards-grid">
-                <div class="card">
-                    <div class="card-icon icono-azul">📚</div>
-                    <h3>Temario</h3>
-                    <p>Todos los temas del semestre organizados por unidad</p>
-                </div>
-                <div class="card">
-                    <div class="card-icon icono-verde">✅</div>
-                    <h3>Tareas</h3>
-                    <p>Entrega y seguimiento de todas mis tareas</p>
-                </div>
-                <div class="card">
-                    <div class="card-icon icono-amarillo">🧪</div>
-                    <h3>Proyectos</h3>
-                    <p>Proyectos y prácticas del curso</p>
-                </div>
-            </div>
+        <div class="bienvenida">
+            <h2>Bienvenido a mi página de la materia</h2>
+            <p>Aquí encontrarás el temario del curso, mis tareas entregadas y proyectos desarrollados durante el semestre. Profesor: J. Jesús Rico Melgoza.</p>
         </div>
+        <div class="cards-grid">
 
-        <!-- SECCIÓN TEMARIO -->
-        <div id="temario" class="seccion">
-            <div class="bienvenida">
-                <h2>Temario del curso</h2>
-                <p>Unidades y temas a cubrir durante el semestre</p>
-            </div>
-            <ul class="lista-temas">
-                <li class="tema-item">
-                    <div class="tema-num">1</div>
-                    <div>
-                        <div class="tema-titulo">Estadística Descriptiva</div>
-                        <div class="tema-sub">Medidas de tendencia central y dispersión</div>
-                    </div>
-                </li>
-                <li class="tema-item">
-                    <div class="tema-num">2</div>
-                    <div>
-                        <div class="tema-titulo">Probabilidad</div>
-                        <div class="tema-sub">Axiomas, reglas y teorema de Bayes</div>
-                    </div>
-                </li>
-                <li class="tema-item">
-                    <div class="tema-num">3</div>
-                    <div>
-                        <div class="tema-titulo">Variables Aleatorias</div>
-                        <div class="tema-sub">Distribuciones discretas y continuas</div>
-                    </div>
-                </li>
-                <li class="tema-item">
-                    <div class="tema-num">4</div>
-                    <div>
-                        <div class="tema-titulo">Distribuciones de muestreo</div>
-                        <div class="tema-sub">Teorema del límite central</div>
-                    </div>
-                </li>
-                <li class="tema-item">
-                    <div class="tema-num">5</div>
-                    <div>
-                        <div class="tema-titulo">Estimación estadística</div>
-                        <div class="tema-sub">Intervalos de confianza</div>
-                    </div>
-                </li>
-            </ul>
+            <a href="Temario.html" class="card">
+                <div class="card-icon icono-azul">📚</div>
+                <h3>Temario</h3>
+                <p>Todos los temas del semestre organizados por unidad</p>
+            </a>
+
+            <a href="Tareas.html" class="card">
+                <div class="card-icon icono-verde">✅</div>
+                <h3>Tareas</h3>
+                <p>Entrega y seguimiento de todas mis tareas</p>
+            </a>
+
+            <a href="#" class="card">
+                <div class="card-icon icono-amarillo">🧪</div>
+                <h3>Proyectos</h3>
+                <p>Proyectos y prácticas del curso</p>
+            </a>
+
         </div>
-
-        <!-- SECCIÓN TAREAS -->
-        <div id="tareas" class="seccion">
-            <div class="tareas-header">
-                <h2>Mis tareas</h2>
-            </div>
-            <div id="lista-tareas">
-                <div class="tarea-card">
-                    <div class="tarea-info">
-                        <h3>Tarea 1 — Medidas de tendencia central</h3>
-                        <p>Unidad 1 · Entrega: pendiente</p>
-                    </div>
-                    <span class="badge badge-pendiente">Pendiente</span>
-                </div>
-                <div class="tarea-card">
-                    <div class="tarea-info">
-                        <h3>Tarea 2 — Ejercicios de probabilidad</h3>
-                        <p>Unidad 2 · Entrega: 10 mar 2026</p>
-                    </div>
-                    <span class="badge badge-entregada">Entregada</span>
-                </div>
-            </div>
-        </div>
-
     </main>
 
     <footer>
         <p>Ricardo Javier Hernández Aguilera · 1919709j@umich.mx</p>
         <p>Probabilidad y Estadística · UMSNH · 2026</p>
     </footer>
-
-    <script src="funciones/main.js"></script>
 
 </body>
 </html>

@@ -61,23 +61,20 @@ nav {
     gap: 0;
 }
 
-nav button {
-    background: none;
-    border: none;
+nav a {
+    text-decoration: none;
     border-bottom: 2px solid transparent;
     padding: 0.75rem 1rem;
     font-size: 14px;
     color: #888;
-    cursor: pointer;
-    font-family: Arial, sans-serif;
     transition: color 0.2s;
 }
 
-nav button:hover {
+nav a:hover {
     color: #1a1a1a;
 }
 
-nav button.activo {
+nav a.activo {
     color: #1a1a1a;
     border-bottom-color: #1a1a1a;
     font-weight: 600;
@@ -88,15 +85,6 @@ main {
     padding: 2rem;
     max-width: 900px;
     margin: 0 auto;
-}
-
-/* ── SECCIONES (mostrar/ocultar) ── */
-.seccion {
-    display: none;
-}
-
-.seccion.visible {
-    display: block;
 }
 
 /* ── BIENVENIDA ── */
@@ -146,8 +134,8 @@ main {
     margin-bottom: 0.75rem;
 }
 
-.icono-azul  { background: #dbeafe; }
-.icono-verde { background: #dcfce7; }
+.icono-azul     { background: #dbeafe; }
+.icono-verde    { background: #dcfce7; }
 .icono-amarillo { background: #fef9c3; }
 
 .card h3 {
@@ -267,4 +255,17 @@ footer {
 
 footer p + p {
     margin-top: 4px;
+}
+
+/* ── CARDS CLICKEABLES ── */
+a.card {
+    text-decoration: none;
+    color: inherit;
+    display: block;
+    transition: transform 0.15s, box-shadow 0.15s;
+}
+
+a.card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
 }

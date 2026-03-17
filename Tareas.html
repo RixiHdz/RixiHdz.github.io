@@ -1,82 +1,57 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-    <link rel="stylesheet" href="vista/style.css">
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Pagina de Probabilidad y Estadistica</title>
-    <script src="funciones/principal.js" defer></script>
+    <title>Tareas — Probabilidad y Estadística</title>
+    <link rel="stylesheet" href="vista/style.css">
 </head>
-
-
 <body>
 
     <header>
-        <h1>Tareas y Proyectos</h1>
-        <h2>Ricardo Javier Hernandez Aguilera</h2>
+        <div class="header-info">
+            <h1>Probabilidad y Estadística</h1>
+            <p>Universidad Michoacana de San Nicolás de Hidalgo</p>
+        </div>
+        <div class="header-badge">
+            <span>Alumno</span>
+            <strong>Ricardo J. Hernández Aguilera</strong>
+            <span>Matrícula: 1919709J</span>
+        </div>
     </header>
-<nav>
-    <ul>
-<li><a href="index.html">Inicio</a></li>
-  <li><a href="Temario.html">Temario</a></li>
- <li><a href="Tareas.html">Tareas</a></li>
 
+    <nav>
+        <a href="index.html">Inicio</a>
+        <a href="Temario.html">Temario</a>
+        <a href="Tareas.html" class="activo">Tareas</a>
+    </nav>
 
+    <main>
+        <div class="tareas-header">
+            <h2>Mis tareas</h2>
+        </div>
+        <div id="lista-tareas">
+            <div class="tarea-card">
+                <div class="tarea-info">
+                    <h3>Tarea 1 — Medidas de tendencia central</h3>
+                    <p>Unidad 1 · Entrega: pendiente</p>
+                </div>
+                <span class="badge badge-pendiente">Pendiente</span>
+            </div>
+            <div class="tarea-card">
+                <div class="tarea-info">
+                    <h3>Tarea 2 — Ejercicios de probabilidad</h3>
+                    <p>Unidad 2 · Entrega: 10 mar 2026</p>
+                </div>
+                <span class="badge badge-entregada">Entregada</span>
+            </div>
+        </div>
+    </main>
 
-    </ul>
-
-
-</nav>
-
-
-
-
-<main>
-
-    <section>
-      <h2>Proyecto 1: Consumo eléctrico por estado</h2>
-      <p>
-       Datos y grafica de consumo electrico por estado en México
-      </p>
-
-      <label for="csvConsumo">Archivo pdf </label>
-      <input id="csvConsumo" type="file" accept=".csv" />
-
-      <button id="btnGraficar" type="button">Graficar</button>
-
-      <div id="estadoConsumoSalida" aria-live="polite"></div>
-      <canvas id="graficaConsumo" width="900" height="420"></canvas>
-    </section>
-
-    <section>
-      <h2>Proyecto 2: Lector de recibo PDF + estadísticas de la clase</h2>
-      <p>
-        Lector de luz, moda , mediana y varianza de los consumos registrados en los recibos PDF
-      </p>
-
-      <label for="pdfRecibo">Recibo PDF:</label>
-      <input id="pdfRecibo" type="file" accept="application/pdf" />
-
-      <button id="btnProcesarPdf" type="button">Procesar PDF</button>
-      <button id="btnLimpiarDatos" type="button">Limpiar datos guardados</button>
-
-      <h3>Datos extraídos del recibo</h3>
-      <pre id="salidaPdf"></pre>
-
-      <h3>Estadísticas (acumuladas)</h3>
-      <ul>
-        <li><strong>Mediana:</strong> <span id="statMediana">—</span></li>
-        <li><strong>Moda:</strong> <span id="statModa">—</span></li>
-        <li><strong>Varianza:</strong> <span id="statVarianza">—</span></li>
-      </ul>
-
-      <p><strong>Muestras acumuladas:</strong> <span id="statN">0</span></p>
-    </section>
-
-</main>
-
+    <footer>
+        <p>Ricardo Javier Hernández Aguilera · 1919709j@umich.mx</p>
+        <p>Probabilidad y Estadística · UMSNH · 2026</p>
+    </footer>
 
 </body>
-
-
 </html>
