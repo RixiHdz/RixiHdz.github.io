@@ -147,12 +147,7 @@
             margin-bottom: 2rem;
             display: none;
         }
-        .debug-card h3 {
-            font-size: 13px;
-            font-weight: 600;
-            margin-bottom: 0.5rem;
-            color: #666;
-        }
+        .debug-card h3 { font-size: 13px; font-weight: 600; margin-bottom: 0.5rem; color: #666; }
         .debug-card textarea {
             width: 100%;
             height: 150px;
@@ -192,7 +187,7 @@
 
         <div class="bienvenida" style="margin-bottom: 1.5rem;">
             <h2>Lector de Recibo CFE</h2>
-            <p>Sube tu recibo de luz en PDF digital (descargado de la app CFE o cfecontigo.mx). El sistema extraerá automáticamente el nombre, fecha límite de pago, total a pagar y el historial de consumo.</p>
+            <p>Sube tu recibo de luz en PDF. El sistema extraerá automáticamente el nombre, fecha límite de pago, total a pagar y el historial de consumo.</p>
         </div>
 
         <div class="zona-carga" id="zonaCarga">
@@ -211,12 +206,11 @@
         </div>
 
         <div class="alerta-error" id="alertaError">
-            ⚠️ No se pudieron extraer los datos. Asegúrate de que sea un recibo digital de CFE.
+            ⚠️ No se pudieron extraer los datos del PDF.
         </div>
 
-        <!-- CAJA DEBUG — muestra el texto extraído para ajustar -->
         <div class="debug-card" id="debugCard">
-            <h3>🔍 Texto extraído del PDF (cópialo y mándalo para ajustar el código)</h3>
+            <h3>🔍 Texto extraído del PDF</h3>
             <textarea id="textoDebug" readonly></textarea>
         </div>
 
@@ -309,12 +303,12 @@
 
         async function procesarPDF(archivo) {
             // Limpiar todo
-            document.getElementById('datNombre').textContent   = '—';
-            document.getElementById('datTotal').textContent    = '—';
-            document.getElementById('datFecha').textContent    = '—';
-            document.getElementById('datKwh').textContent      = '—';
-            document.getElementById('datPeriodo').textContent  = '—';
-            document.getElementById('datServicio').textContent = '—';
+            document.getElementById('datNombre').textContent    = '—';
+            document.getElementById('datTotal').textContent     = '—';
+            document.getElementById('datFecha').textContent     = '—';
+            document.getElementById('datKwh').textContent       = '—';
+            document.getElementById('datPeriodo').textContent   = '—';
+            document.getElementById('datServicio').textContent  = '—';
             document.getElementById('tablaHistorial').innerHTML = '';
             document.getElementById('resultado').style.display  = 'none';
             document.getElementById('alertaError').style.display = 'none';
@@ -332,19 +326,15 @@
                 for (let i = 1; i <= pdf.numPages; i++) {
                     const pagina    = await pdf.getPage(i);
                     const contenido = await pagina.getTextContent();
-
-                    // Ordenar items por posición para leer en orden correcto
-                    const items = contenido.items;
+                    const items     = contenido.items;
                     items.sort((a, b) => {
                         const diffY = Math.round(b.transform[5]) - Math.round(a.transform[5]);
                         return diffY !== 0 ? diffY : a.transform[4] - b.transform[4];
                     });
-
                     textoCompleto += items.map(item => item.str).join(' ') + '\n';
                 }
 
-                // Mostrar texto extraído en la caja debug
-                document.getElementById('textoDebug').value = textoCompleto;
+                document.getElementById('textoDebug').value       = textoCompleto;
                 document.getElementById('debugCard').style.display = 'block';
 
                 const datos = extraerDatos(textoCompleto);
@@ -359,52 +349,114 @@
             }
         }
 
+        function limpiarTexto(t) {
+            // Normaliza caracteres OCR comunes del recibo CFE
+            return t
+                .replace(/[•·]/g, 'E')
+                .replace(/«/g, 'e')
+                .replace(/`/g, 'i')
+                .replace(/~/g, 'n')
+                .replace(/\|/g, 'I')
+                .replace(/0/g, 'O')
+                .replace(/1/g, 'I')
+                .replace(/8/g, 'B')
+                .replace(/6/g, 'G')
+                .replace(/\$/g, 'S');
+        }
+
         function extraerDatos(texto) {
             const datos = {
                 nombre: '', total: '', fechaLimite: '',
                 kwh: '', periodo: '', noServicio: '', historial: []
             };
 
-            const regNombre = /([A-ZÁÉÍÓÚÑ]{2,}(?:\s+[A-ZÁÉÍÓÚÑ]{2,}){1,3})/;
-            const matchNombre = texto.match(regNombre);
-            if (matchNombre) datos.nombre = matchNombre[1].trim();
+            // ── NOMBRE ──
+            // Busca secuencia de palabras en mayúsculas de al menos 2 letras
+            // tolerante a caracteres OCR distorsionados
+            const lineas = texto.split('\n');
+            for (const linea of lineas) {
+                const limpia = linea.trim();
+                // línea con 2+ palabras en mayúsculas/especiales, sin números largos
+                if (/^[A-ZÁÉÍÓÚÑ•\u00C0-\u00FF\s«`~]{6,}$/.test(limpia) &&
+                    limpia.split(/\s+/).length >= 2 &&
+                    !/\d{4,}/.test(limpia)) {
+                    datos.nombre = limpia
+                        .replace(/[•·«`~]/g, '')
+                        .replace(/\s+/g, ' ')
+                        .trim();
+                    if (datos.nombre.length > 5) break;
+                }
+            }
 
-            const regTotal = /\$\s*(\d{1,6}(?:[.,]\d{2})?)/;
-            const matchTotal = texto.match(regTotal);
+            // ── TOTAL ── busca $ seguido de 3-6 dígitos
+            const matchTotal = texto.match(/\$\s*(\d{3,6}(?:[.,]\d{2})?)/);
             if (matchTotal) datos.total = '$' + matchTotal[1];
 
-            const regFecha = /L[IÍ]MITE\s+DE\s+PAGO[:\s]*(\d{1,2}\s+[A-ZÁÉÍÓÚÑA-Za-z]{3,}\s+\d{2,4})/i;
-            const matchFecha = texto.match(regFecha);
-            if (matchFecha) datos.fechaLimite = matchFecha[1].trim();
+            // ── NO. SERVICIO ── busca secuencia de 9-15 dígitos
+            // el texto distorsionado convierte 1→l, 5→S etc.
+            // buscamos el patrón ~771100210 o similar
+            const matchServ = texto.match(/[Nn][Oo]\.?\s*[Nn]?\s*[A-Za-z]*\s*([lI1][0-9lI1]{8,14})/);
+            if (matchServ) {
+                datos.noServicio = matchServ[1].replace(/[lI]/g, '1');
+            } else {
+                // fallback: busca bloque de 9+ dígitos/l/I
+                const matchBloque = texto.match(/\b([0-9lI]{9,15})\b/);
+                if (matchBloque) datos.noServicio = matchBloque[1].replace(/[lI]/g, '1');
+            }
 
-            const regServicio = /(?:NO\.?\s*(?:DE\s*)?SERVICIO)[:\s]*([0-9]{8,15})/i;
-            const matchServicio = texto.match(regServicio);
-            if (matchServicio) datos.noServicio = matchServicio[1];
+            // ── LÍMITE DE PAGO ──
+            // acepta formatos: "05 ENE 26", "05/01/2026", "05-ENE-26"
+            const matchFecha = texto.match(
+                /(?:L[IÍ1]M[I1]TE|L[IÍ]M[IÍ]TE|NAIODO|PAC[^\s]*)\s+(?:PAC[^\s]*\s+)?(?:PAG[O0][^\s]*\s+)?(\d{1,2}[\s\/\-]+[A-Za-z]{3,}[\s\/\-]+\d{2,4})/i
+            );
+            if (matchFecha) {
+                datos.fechaLimite = matchFecha[1].trim();
+            } else {
+                // busca DD MMM YY directamente
+                const m2 = texto.match(/(\d{2})\s+([A-Z]{3})\s+(\d{2,4})/);
+                if (m2) datos.fechaLimite = `${m2[1]} ${m2[2]} ${m2[3]}`;
+            }
 
-            const regPeriodo = /PERIODO\s+FACTURADO[:\s]*([^\n]{5,35})/i;
-            const matchPeriodo = texto.match(regPeriodo);
-            if (matchPeriodo) datos.periodo = matchPeriodo[1].trim();
+            // ── PERIODO FACTURADO ──
+            const matchPer = texto.match(
+                /(?:HISTORI[A0]|PERIOD[O0]|FACTUR[A0]D[O0])[^\d]*(\d{1,2}\s+[A-Za-z]{3}\s+\d{2})[^\d]*(\d{1,2}\s+[A-Za-z]{3}\s+\d{2})/i
+            );
+            if (matchPer) {
+                datos.periodo = `${matchPer[1]} - ${matchPer[2]}`;
+            } else {
+                // busca dos fechas juntas tipo "OCT 25 DIC 25"
+                const m2 = texto.match(/([A-Z]{3}\s+\d{2})[\s\-n]+([A-Z]{3}\s+\d{2})/i);
+                if (m2) datos.periodo = `${m2[1]} - ${m2[2]}`;
+            }
 
-            const regKwh = /Energ[ií]a\s*\(?kWh\)?[^0-9]*(\d{2,4})/i;
-            const matchKwh = texto.match(regKwh);
-            if (matchKwh) datos.kwh = matchKwh[1];
+            // ── kWh ──
+            // en recibos escaneados busca número de 2-4 dígitos cerca de "kWh" o solo
+            const matchKwh = texto.match(/(?:kWh|KWH|kwh)[^\d]*(\d{2,4})|(\d{2,4})\s*(?:kWh|KWH)/i);
+            if (matchKwh) datos.kwh = matchKwh[1] || matchKwh[2];
 
-            const regHistorial = /del\s+(\d{1,2}\s+[A-Za-záéíóúÁÉÍÓÚÑñ]{3}\.?\s*\d{2})\s+al\s+(\d{1,2}\s+[A-Za-záéíóúÁÉÍÓÚÑñ]{3}\.?\s*\d{2})\s+(\d{2,4})\s+\$?([\d,]+(?:\.\d{2})?)/gi;
-            let matchH;
-            while ((matchH = regHistorial.exec(texto)) !== null) {
+            // ── HISTORIAL ──
+            // patrón CFE: "del DD MMM AA al DD MMM AA  NNN  $NNN"
+            // también acepta versiones distorsionadas
+            const regH = /(?:del?|De)\s+(\d{1,2}\s+[A-Za-z]{3}\.?\s*\d{2})\s+(?:al?|Al?)\s+(\d{1,2}\s+[A-Za-z]{3}\.?\s*\d{2})\s+(\d{2,4})\s+\$?([\d,]+(?:\.\d{2})?)/gi;
+            let mH;
+            while ((mH = regH.exec(texto)) !== null) {
                 datos.historial.push({
-                    periodo: `${matchH[1].trim()} - ${matchH[2].trim()}`,
-                    kwh:     parseInt(matchH[3]),
-                    importe: '$' + matchH[4]
+                    periodo: `${mH[1].trim()} - ${mH[2].trim()}`,
+                    kwh:     parseInt(mH[3]),
+                    importe: '$' + mH[4]
                 });
             }
 
-            if (datos.historial.length === 0 && datos.kwh) {
-                datos.historial = [{
-                    periodo: datos.periodo || 'Periodo actual',
-                    kwh:     parseInt(datos.kwh) || 0,
-                    importe: datos.total
-                }];
+            // fallback historial — usa datos actuales si no encontró
+            if (datos.historial.length === 0) {
+                const kwhNum = parseInt(datos.kwh) || 0;
+                if (kwhNum > 0) {
+                    datos.historial = [{
+                        periodo: datos.periodo || 'Periodo actual',
+                        kwh:     kwhNum,
+                        importe: datos.total || '$0'
+                    }];
+                }
             }
 
             return datos;
@@ -436,70 +488,4 @@
             }
 
             construirGrafica(datos.historial);
-            document.getElementById('resultado').style.display = 'block';
-        }
-
-        function construirGrafica(historial) {
-            if (graficaInstancia) { graficaInstancia.destroy(); graficaInstancia = null; }
-
-            const ctx       = document.getElementById('graficaConsumo').getContext('2d');
-            const etiquetas = historial.map(h => h.periodo);
-            const valores   = historial.map(h => h.kwh);
-            const promedio  = valores.length > 0
-                ? Math.round(valores.reduce((a, b) => a + b, 0) / valores.length)
-                : 0;
-
-            graficaInstancia = new Chart(ctx, {
-                type: 'bar',
-                data: {
-                    labels: etiquetas,
-                    datasets: [
-                        {
-                            label: 'Consumo (kWh)',
-                            data: valores,
-                            backgroundColor: valores.map((v, i) => i === 0 ? '#1e40af' : '#93c5fd'),
-                            borderRadius: 6,
-                            borderSkipped: false,
-                        },
-                        {
-                            label: `Promedio: ${promedio} kWh`,
-                            data: new Array(valores.length).fill(promedio),
-                            type: 'line',
-                            borderColor: '#ef4444',
-                            borderWidth: 2,
-                            borderDash: [5, 5],
-                            pointRadius: 0,
-                            fill: false,
-                        }
-                    ]
-                },
-                options: {
-                    responsive: true,
-                    plugins: {
-                        legend: { position: 'top' },
-                        tooltip: {
-                            callbacks: {
-                                label: ctx => ` ${ctx.parsed.y} kWh`
-                            }
-                        }
-                    },
-                    scales: {
-                        y: { beginAtZero: true, title: { display: true, text: 'kWh' } },
-                        x: { ticks: { maxRotation: 45 } }
-                    }
-                }
-            });
-        }
-
-        function reiniciar() {
-            document.getElementById('resultado').style.display   = 'none';
-            document.getElementById('alertaError').style.display = 'none';
-            document.getElementById('debugCard').style.display   = 'none';
-            zonaCarga.style.display = 'block';
-            inputArchivo.value = '';
-            if (graficaInstancia) { graficaInstancia.destroy(); graficaInstancia = null; }
-        }
-    </script>
-
-</body>
-</html>
+            document.getElementById('resultado').style.display = 'block
