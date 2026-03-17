@@ -1,0 +1,455 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Proyectos — Probabilidad y Estadística</title>
+    <link rel="stylesheet" href="vista/style.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+    <style>
+        .zona-carga {
+            background: #ffffff;
+            border: 2px dashed #e0e0e0;
+            border-radius: 12px;
+            padding: 3rem 2rem;
+            text-align: center;
+            cursor: pointer;
+            transition: border-color 0.2s, background 0.2s;
+            margin-bottom: 2rem;
+        }
+        .zona-carga:hover { border-color: #aaa; background: #fafafa; }
+        .zona-carga.arrastrando { border-color: #3b82f6; background: #eff6ff; }
+        .zona-carga .icono-carga { font-size: 2.5rem; margin-bottom: 0.75rem; }
+        .zona-carga h3 { font-size: 16px; font-weight: 600; margin-bottom: 0.25rem; }
+        .zona-carga p { font-size: 13px; color: #888; }
+        .btn-subir {
+            display: inline-block;
+            margin-top: 1rem;
+            background: #1a1a1a;
+            color: #fff;
+            border: none;
+            border-radius: 8px;
+            padding: 0.6rem 1.5rem;
+            font-size: 13px;
+            font-family: Arial, sans-serif;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+        .btn-subir:hover { background: #333; }
+
+        #resultado { display: none; }
+
+        .resultado-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1.5rem;
+        }
+        .resultado-header h2 { font-size: 18px; font-weight: 600; }
+        .btn-nuevo {
+            background: none;
+            border: 1px solid #e0e0e0;
+            border-radius: 8px;
+            padding: 0.4rem 1rem;
+            font-size: 13px;
+            font-family: Arial, sans-serif;
+            cursor: pointer;
+            color: #666;
+        }
+        .btn-nuevo:hover { background: #f5f5f5; }
+
+        .datos-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+            gap: 1rem;
+            margin-bottom: 2rem;
+        }
+        .dato-card {
+            background: #ffffff;
+            border: 1px solid #e0e0e0;
+            border-radius: 12px;
+            padding: 1.25rem;
+        }
+        .dato-label {
+            font-size: 11px;
+            color: #888;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            margin-bottom: 0.4rem;
+        }
+        .dato-valor { font-size: 20px; font-weight: 600; color: #1a1a1a; }
+        .dato-valor.verde { color: #166534; }
+        .dato-valor.azul  { color: #1e40af; }
+
+        .grafica-card {
+            background: #ffffff;
+            border: 1px solid #e0e0e0;
+            border-radius: 12px;
+            padding: 1.5rem;
+            margin-bottom: 2rem;
+        }
+        .grafica-card h3 { font-size: 15px; font-weight: 600; margin-bottom: 1.25rem; }
+        .grafica-card canvas { max-height: 300px; }
+
+        .historial-card {
+            background: #ffffff;
+            border: 1px solid #e0e0e0;
+            border-radius: 12px;
+            padding: 1.5rem;
+            margin-bottom: 2rem;
+            overflow-x: auto;
+        }
+        .historial-card h3 { font-size: 15px; font-weight: 600; margin-bottom: 1rem; }
+
+        table { width: 100%; border-collapse: collapse; font-size: 13px; }
+        thead tr { border-bottom: 2px solid #e0e0e0; }
+        th {
+            text-align: left;
+            padding: 0.5rem 0.75rem;
+            color: #888;
+            font-weight: 600;
+            font-size: 11px;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+        td { padding: 0.6rem 0.75rem; border-bottom: 1px solid #f0f0f0; color: #1a1a1a; }
+        tr:last-child td { border-bottom: none; }
+        tr.fila-actual td { font-weight: 600; background: #f0fdf4; }
+
+        #cargando { display: none; text-align: center; padding: 2rem; }
+        .spinner {
+            width: 32px;
+            height: 32px;
+            border: 3px solid #e0e0e0;
+            border-top-color: #1a1a1a;
+            border-radius: 50%;
+            animation: girar 0.8s linear infinite;
+            margin: 0 auto 1rem;
+        }
+        @keyframes girar { to { transform: rotate(360deg); } }
+
+        .alerta-error {
+            display: none;
+            background: #fef2f2;
+            border: 1px solid #fecaca;
+            border-radius: 8px;
+            padding: 1rem 1.25rem;
+            color: #991b1b;
+            font-size: 13px;
+            margin-bottom: 1rem;
+        }
+    </style>
+</head>
+<body>
+
+    <header>
+        <div class="header-info">
+            <h1>Probabilidad y Estadística</h1>
+            <p>Universidad Michoacana de San Nicolás de Hidalgo</p>
+        </div>
+        <div class="header-badge">
+            <span>Alumno</span>
+            <strong>Ricardo J. Hernández Aguilera</strong>
+            <span>Matrícula: 1919709J</span>
+        </div>
+    </header>
+
+    <nav>
+        <a href="index.html">Inicio</a>
+        <a href="Temario.html">Temario</a>
+        <a href="Tareas.html">Tareas</a>
+        <a href="Proyectos.html" class="activo">Proyectos</a>
+    </nav>
+
+    <main>
+
+        <div class="bienvenida" style="margin-bottom: 1.5rem;">
+            <h2>Lector de Recibo CFE</h2>
+            <p>Sube tu recibo de luz en PDF. El sistema extraerá automáticamente el nombre, fecha límite de pago, total a pagar y el historial de consumo, y generará una gráfica de tu consumo histórico.</p>
+        </div>
+
+        <div class="zona-carga" id="zonaCarga">
+            <div class="icono-carga">📄</div>
+            <h3>Sube tu recibo de CFE</h3>
+            <p>Arrastra el PDF aquí o haz clic para seleccionarlo</p>
+            <button class="btn-subir" onclick="document.getElementById('inputArchivo').click()">
+                Seleccionar PDF
+            </button>
+            <input type="file" id="inputArchivo" accept=".pdf" style="display:none">
+        </div>
+
+        <div id="cargando">
+            <div class="spinner"></div>
+            <p style="font-size:14px; color:#666;">Leyendo el PDF...</p>
+        </div>
+
+        <div class="alerta-error" id="alertaError">
+            ⚠️ No se pudieron extraer todos los datos del PDF. Asegúrate de que sea un recibo de CFE válido.
+        </div>
+
+        <div id="resultado">
+            <div class="resultado-header">
+                <h2>Datos del recibo</h2>
+                <button class="btn-nuevo" onclick="reiniciar()">← Subir otro recibo</button>
+            </div>
+
+            <div class="datos-grid">
+                <div class="dato-card">
+                    <div class="dato-label">Nombre</div>
+                    <div class="dato-valor azul" id="datNombre" style="font-size:15px;">—</div>
+                </div>
+                <div class="dato-card">
+                    <div class="dato-label">Total a pagar</div>
+                    <div class="dato-valor verde" id="datTotal">—</div>
+                </div>
+                <div class="dato-card">
+                    <div class="dato-label">Límite de pago</div>
+                    <div class="dato-valor" id="datFecha" style="font-size:15px;">—</div>
+                </div>
+                <div class="dato-card">
+                    <div class="dato-label">Consumo actual (kWh)</div>
+                    <div class="dato-valor" id="datKwh">—</div>
+                </div>
+                <div class="dato-card">
+                    <div class="dato-label">Periodo facturado</div>
+                    <div class="dato-valor" id="datPeriodo" style="font-size:13px; padding-top:4px;">—</div>
+                </div>
+                <div class="dato-card">
+                    <div class="dato-label">No. de servicio</div>
+                    <div class="dato-valor" id="datServicio" style="font-size:13px; padding-top:4px;">—</div>
+                </div>
+            </div>
+
+            <div class="grafica-card">
+                <h3>Consumo histórico (kWh)</h3>
+                <canvas id="graficaConsumo"></canvas>
+            </div>
+
+            <div class="historial-card">
+                <h3>Historial de consumo</h3>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Periodo</th>
+                            <th>kWh</th>
+                            <th>Importe</th>
+                        </tr>
+                    </thead>
+                    <tbody id="tablaHistorial"></tbody>
+                </table>
+            </div>
+        </div>
+
+    </main>
+
+    <footer>
+        <p>Ricardo Javier Hernández Aguilera · 1919709j@umich.mx</p>
+        <p>Probabilidad y Estadística · UMSNH · 2026</p>
+    </footer>
+
+    <script>
+        pdfjsLib.GlobalWorkerOptions.workerSrc =
+            'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+
+        let graficaInstancia = null;
+
+        const inputArchivo = document.getElementById('inputArchivo');
+        const zonaCarga    = document.getElementById('zonaCarga');
+
+        inputArchivo.addEventListener('change', e => {
+            if (e.target.files[0]) procesarPDF(e.target.files[0]);
+        });
+
+        zonaCarga.addEventListener('dragover', e => {
+            e.preventDefault();
+            zonaCarga.classList.add('arrastrando');
+        });
+        zonaCarga.addEventListener('dragleave', () => {
+            zonaCarga.classList.remove('arrastrando');
+        });
+        zonaCarga.addEventListener('drop', e => {
+            e.preventDefault();
+            zonaCarga.classList.remove('arrastrando');
+            const archivo = e.dataTransfer.files[0];
+            if (archivo && archivo.type === 'application/pdf') procesarPDF(archivo);
+        });
+
+        async function procesarPDF(archivo) {
+            mostrarCargando(true);
+            ocultarError();
+            try {
+                const arrayBuffer = await archivo.arrayBuffer();
+                const pdf = await pdfjsLib.getDocument({ data: arrayBuffer }).promise;
+
+                let textoCompleto = '';
+                for (let i = 1; i <= pdf.numPages; i++) {
+                    const pagina = await pdf.getPage(i);
+                    const contenido = await pagina.getTextContent();
+                    const textoPagina = contenido.items.map(item => item.str).join(' ');
+                    textoCompleto += textoPagina + '\n';
+                }
+
+                const datos = extraerDatos(textoCompleto);
+                mostrarResultados(datos);
+            } catch (err) {
+                console.error(err);
+                mostrarError();
+            } finally {
+                mostrarCargando(false);
+            }
+        }
+
+        function extraerDatos(texto) {
+            const datos = {
+                nombre: '', total: '', fechaLimite: '',
+                kwh: '', periodo: '', noServicio: '', historial: []
+            };
+
+            const regNombre = /([A-ZÁÉÍÓÚÑ]{2,}\s+[A-ZÁÉÍÓÚÑ]{2,}(?:\s+[A-ZÁÉÍÓÚÑ]{2,})?)/;
+            const matchNombre = texto.match(regNombre);
+            if (matchNombre) datos.nombre = matchNombre[1].trim();
+
+            const regTotal = /\$\s*(\d{1,6}(?:[.,]\d{2})?)/;
+            const matchTotal = texto.match(regTotal);
+            if (matchTotal) datos.total = '$' + matchTotal[1];
+
+            const regFecha = /L[IÍ]MITE\s+DE\s+PAGO[:\s]*([0-9]{1,2}\s+[A-ZÁÉÍÓÚÑ]{3,}\s+\d{2,4})/i;
+            const matchFecha = texto.match(regFecha);
+            if (matchFecha) datos.fechaLimite = matchFecha[1].trim();
+
+            const regServicio = /NO\.?\s*(?:DE\s*)?SERVICIO[:\s]*([0-9]{8,15})/i;
+            const matchServicio = texto.match(regServicio);
+            if (matchServicio) datos.noServicio = matchServicio[1];
+
+            const regPeriodo = /PERIODO\s+FACTURADO[:\s]*([0-9]{1,2}\s+[A-ZÁÉÍÓÚÑ]{3}\s+\d{2}[\s\-]+[0-9]{1,2}\s+[A-ZÁÉÍÓÚÑ]{3}\s+\d{2})/i;
+            const matchPeriodo = texto.match(regPeriodo);
+            if (matchPeriodo) datos.periodo = matchPeriodo[1].trim();
+
+            const regKwh = /Energ[ií]a\s*\(kWh\)[^0-9]*([0-9]{2,4})/i;
+            const matchKwh = texto.match(regKwh);
+            if (matchKwh) datos.kwh = matchKwh[1];
+
+            const regHistorial = /del?\s+(\d{1,2}\s+[A-Za-záéíóúÁÉÍÓÚÑñ]{3}\.?\s+\d{2})\s+al?\s+(\d{1,2}\s+[A-Za-záéíóúÁÉÍÓÚÑñ]{3}\.?\s+\d{2})\s+(\d{2,4})\s+\$?([\d,]+(?:\.\d{2})?)/gi;
+            let matchH;
+            while ((matchH = regHistorial.exec(texto)) !== null) {
+                datos.historial.push({
+                    periodo: `${matchH[1]} - ${matchH[2]}`,
+                    kwh: parseInt(matchH[3]),
+                    importe: '$' + matchH[4]
+                });
+            }
+
+            if (datos.historial.length === 0 && datos.kwh) {
+                datos.historial = [
+                    { periodo: datos.periodo || 'Periodo actual', kwh: parseInt(datos.kwh) || 0, importe: datos.total }
+                ];
+            }
+
+            return datos;
+        }
+
+        function mostrarResultados(datos) {
+            document.getElementById('datNombre').textContent   = datos.nombre       || 'No encontrado';
+            document.getElementById('datTotal').textContent    = datos.total        || 'No encontrado';
+            document.getElementById('datFecha').textContent    = datos.fechaLimite  || 'No encontrado';
+            document.getElementById('datKwh').textContent      = datos.kwh ? datos.kwh + ' kWh' : 'No encontrado';
+            document.getElementById('datPeriodo').textContent  = datos.periodo      || 'No encontrado';
+            document.getElementById('datServicio').textContent = datos.noServicio   || 'No encontrado';
+
+            const tbody = document.getElementById('tablaHistorial');
+            tbody.innerHTML = '';
+            if (datos.historial.length > 0) {
+                datos.historial.forEach((fila, i) => {
+                    const tr = document.createElement('tr');
+                    if (i === 0) tr.classList.add('fila-actual');
+                    tr.innerHTML = `
+                        <td>${fila.periodo}</td>
+                        <td>${fila.kwh} kWh</td>
+                        <td>${fila.importe}</td>
+                    `;
+                    tbody.appendChild(tr);
+                });
+            } else {
+                tbody.innerHTML = '<tr><td colspan="3" style="color:#888;text-align:center;">No se encontró historial</td></tr>';
+            }
+
+            construirGrafica(datos.historial);
+            zonaCarga.style.display = 'none';
+            document.getElementById('resultado').style.display = 'block';
+        }
+
+        function construirGrafica(historial) {
+            if (graficaInstancia) { graficaInstancia.destroy(); graficaInstancia = null; }
+
+            const ctx = document.getElementById('graficaConsumo').getContext('2d');
+            const etiquetas = historial.map(h => h.periodo);
+            const valores   = historial.map(h => h.kwh);
+            const promedio  = valores.length > 0
+                ? Math.round(valores.reduce((a, b) => a + b, 0) / valores.length)
+                : 0;
+
+            graficaInstancia = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: etiquetas,
+                    datasets: [
+                        {
+                            label: 'Consumo (kWh)',
+                            data: valores,
+                            backgroundColor: valores.map((v, i) => i === 0 ? '#1e40af' : '#93c5fd'),
+                            borderRadius: 6,
+                            borderSkipped: false,
+                        },
+                        {
+                            label: `Promedio: ${promedio} kWh`,
+                            data: new Array(valores.length).fill(promedio),
+                            type: 'line',
+                            borderColor: '#ef4444',
+                            borderWidth: 2,
+                            borderDash: [5, 5],
+                            pointRadius: 0,
+                            fill: false,
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    plugins: {
+                        legend: { position: 'top' },
+                        tooltip: {
+                            callbacks: {
+                                label: ctx => ` ${ctx.dataset.label}: ${ctx.parsed.y} kWh`
+                            }
+                        }
+                    },
+                    scales: {
+                        y: { beginAtZero: true, title: { display: true, text: 'kWh' } },
+                        x: { ticks: { maxRotation: 45 } }
+                    }
+                }
+            });
+        }
+
+        function mostrarCargando(estado) {
+            document.getElementById('cargando').style.display = estado ? 'block' : 'none';
+            zonaCarga.style.display = estado ? 'none' : 'block';
+        }
+        function mostrarError() {
+            document.getElementById('alertaError').style.display = 'block';
+            zonaCarga.style.display = 'block';
+        }
+        function ocultarError() {
+            document.getElementById('alertaError').style.display = 'none';
+        }
+        function reiniciar() {
+            document.getElementById('resultado').style.display = 'none';
+            document.getElementById('alertaError').style.display = 'none';
+            zonaCarga.style.display = 'block';
+            inputArchivo.value = '';
+            if (graficaInstancia) { graficaInstancia.destroy(); graficaInstancia = null; }
+        }
+    </script>
+
+</body>
+</html>
