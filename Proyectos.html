@@ -14,7 +14,6 @@
             border-radius: 12px;
             padding: 3rem 2rem;
             text-align: center;
-            cursor: pointer;
             transition: border-color 0.2s, background 0.2s;
             margin-bottom: 2rem;
         }
@@ -190,11 +189,12 @@
             <p>Sube tu recibo de luz en PDF. El sistema extraerá automáticamente el nombre, fecha límite de pago, total a pagar y el historial de consumo.</p>
         </div>
 
+        <!-- ZONA DE CARGA — sin onclick en la zona, solo en el botón -->
         <div class="zona-carga" id="zonaCarga">
             <div class="icono-carga">📄</div>
             <h3>Sube tu recibo de CFE</h3>
-            <p>Arrastra el PDF aquí o haz clic para seleccionarlo</p>
-            <button class="btn-subir" onclick="document.getElementById('inputArchivo').click()">
+            <p>Arrastra el PDF aquí o haz clic en el botón</p>
+            <button class="btn-subir" id="btnSeleccionar">
                 Seleccionar PDF
             </button>
             <input type="file" id="inputArchivo" accept=".pdf" style="display:none">
@@ -219,7 +219,6 @@
                 <h2>Datos del recibo</h2>
                 <button class="btn-nuevo" onclick="reiniciar()">← Subir otro recibo</button>
             </div>
-
             <div class="datos-grid">
                 <div class="dato-card">
                     <div class="dato-label">Nombre</div>
@@ -280,13 +279,22 @@
 
         let graficaInstancia = null;
 
-        const inputArchivo = document.getElementById('inputArchivo');
-        const zonaCarga    = document.getElementById('zonaCarga');
+        const inputArchivo   = document.getElementById('inputArchivo');
+        const zonaCarga      = document.getElementById('zonaCarga');
+        const btnSeleccionar = document.getElementById('btnSeleccionar');
 
+        // ── BOTÓN — abre selector de archivo
+        btnSeleccionar.addEventListener('click', e => {
+            e.stopPropagation();
+            inputArchivo.click();
+        });
+
+        // ── INPUT — cuando se selecciona archivo
         inputArchivo.addEventListener('change', e => {
             if (e.target.files[0]) procesarPDF(e.target.files[0]);
         });
 
+        // ── DRAG AND DROP
         zonaCarga.addEventListener('dragover', e => {
             e.preventDefault();
             zonaCarga.classList.add('arrastrando');
@@ -349,94 +357,64 @@
             }
         }
 
-        function limpiarTexto(t) {
-            // Normaliza caracteres OCR comunes del recibo CFE
-            return t
-                .replace(/[•·]/g, 'E')
-                .replace(/«/g, 'e')
-                .replace(/`/g, 'i')
-                .replace(/~/g, 'n')
-                .replace(/\|/g, 'I')
-                .replace(/0/g, 'O')
-                .replace(/1/g, 'I')
-                .replace(/8/g, 'B')
-                .replace(/6/g, 'G')
-                .replace(/\$/g, 'S');
-        }
-
         function extraerDatos(texto) {
             const datos = {
                 nombre: '', total: '', fechaLimite: '',
                 kwh: '', periodo: '', noServicio: '', historial: []
             };
 
-            // ── NOMBRE ──
-            // Busca secuencia de palabras en mayúsculas de al menos 2 letras
-            // tolerante a caracteres OCR distorsionados
+            // ── NOMBRE
             const lineas = texto.split('\n');
             for (const linea of lineas) {
                 const limpia = linea.trim();
-                // línea con 2+ palabras en mayúsculas/especiales, sin números largos
                 if (/^[A-ZÁÉÍÓÚÑ•\u00C0-\u00FF\s«`~]{6,}$/.test(limpia) &&
                     limpia.split(/\s+/).length >= 2 &&
                     !/\d{4,}/.test(limpia)) {
-                    datos.nombre = limpia
-                        .replace(/[•·«`~]/g, '')
-                        .replace(/\s+/g, ' ')
-                        .trim();
+                    datos.nombre = limpia.replace(/[•·«`~]/g, '').replace(/\s+/g, ' ').trim();
                     if (datos.nombre.length > 5) break;
                 }
             }
 
-            // ── TOTAL ── busca $ seguido de 3-6 dígitos
+            // ── TOTAL
             const matchTotal = texto.match(/\$\s*(\d{3,6}(?:[.,]\d{2})?)/);
             if (matchTotal) datos.total = '$' + matchTotal[1];
 
-            // ── NO. SERVICIO ── busca secuencia de 9-15 dígitos
-            // el texto distorsionado convierte 1→l, 5→S etc.
-            // buscamos el patrón ~771100210 o similar
+            // ── NO. SERVICIO
             const matchServ = texto.match(/[Nn][Oo]\.?\s*[Nn]?\s*[A-Za-z]*\s*([lI1][0-9lI1]{8,14})/);
             if (matchServ) {
                 datos.noServicio = matchServ[1].replace(/[lI]/g, '1');
             } else {
-                // fallback: busca bloque de 9+ dígitos/l/I
                 const matchBloque = texto.match(/\b([0-9lI]{9,15})\b/);
                 if (matchBloque) datos.noServicio = matchBloque[1].replace(/[lI]/g, '1');
             }
 
-            // ── LÍMITE DE PAGO ──
-            // acepta formatos: "05 ENE 26", "05/01/2026", "05-ENE-26"
+            // ── LÍMITE DE PAGO
             const matchFecha = texto.match(
-                /(?:L[IÍ1]M[I1]TE|L[IÍ]M[IÍ]TE|NAIODO|PAC[^\s]*)\s+(?:PAC[^\s]*\s+)?(?:PAG[O0][^\s]*\s+)?(\d{1,2}[\s\/\-]+[A-Za-z]{3,}[\s\/\-]+\d{2,4})/i
+                /(?:L[IÍ1]M[I1]TE|NAIODO|PAC[^\s]*)\s+(?:PAC[^\s]*\s+)?(?:PAG[O0][^\s]*\s+)?(\d{1,2}[\s\/\-]+[A-Za-z]{3,}[\s\/\-]+\d{2,4})/i
             );
             if (matchFecha) {
                 datos.fechaLimite = matchFecha[1].trim();
             } else {
-                // busca DD MMM YY directamente
                 const m2 = texto.match(/(\d{2})\s+([A-Z]{3})\s+(\d{2,4})/);
                 if (m2) datos.fechaLimite = `${m2[1]} ${m2[2]} ${m2[3]}`;
             }
 
-            // ── PERIODO FACTURADO ──
+            // ── PERIODO
             const matchPer = texto.match(
                 /(?:HISTORI[A0]|PERIOD[O0]|FACTUR[A0]D[O0])[^\d]*(\d{1,2}\s+[A-Za-z]{3}\s+\d{2})[^\d]*(\d{1,2}\s+[A-Za-z]{3}\s+\d{2})/i
             );
             if (matchPer) {
                 datos.periodo = `${matchPer[1]} - ${matchPer[2]}`;
             } else {
-                // busca dos fechas juntas tipo "OCT 25 DIC 25"
                 const m2 = texto.match(/([A-Z]{3}\s+\d{2})[\s\-n]+([A-Z]{3}\s+\d{2})/i);
                 if (m2) datos.periodo = `${m2[1]} - ${m2[2]}`;
             }
 
-            // ── kWh ──
-            // en recibos escaneados busca número de 2-4 dígitos cerca de "kWh" o solo
+            // ── kWh
             const matchKwh = texto.match(/(?:kWh|KWH|kwh)[^\d]*(\d{2,4})|(\d{2,4})\s*(?:kWh|KWH)/i);
             if (matchKwh) datos.kwh = matchKwh[1] || matchKwh[2];
 
-            // ── HISTORIAL ──
-            // patrón CFE: "del DD MMM AA al DD MMM AA  NNN  $NNN"
-            // también acepta versiones distorsionadas
+            // ── HISTORIAL
             const regH = /(?:del?|De)\s+(\d{1,2}\s+[A-Za-z]{3}\.?\s*\d{2})\s+(?:al?|Al?)\s+(\d{1,2}\s+[A-Za-z]{3}\.?\s*\d{2})\s+(\d{2,4})\s+\$?([\d,]+(?:\.\d{2})?)/gi;
             let mH;
             while ((mH = regH.exec(texto)) !== null) {
@@ -447,7 +425,6 @@
                 });
             }
 
-            // fallback historial — usa datos actuales si no encontró
             if (datos.historial.length === 0) {
                 const kwhNum = parseInt(datos.kwh) || 0;
                 if (kwhNum > 0) {
@@ -488,4 +465,70 @@
             }
 
             construirGrafica(datos.historial);
-            document.getElementById('resultado').style.display = 'block
+            document.getElementById('resultado').style.display = 'block';
+        }
+
+        function construirGrafica(historial) {
+            if (graficaInstancia) { graficaInstancia.destroy(); graficaInstancia = null; }
+
+            const ctx       = document.getElementById('graficaConsumo').getContext('2d');
+            const etiquetas = historial.map(h => h.periodo);
+            const valores   = historial.map(h => h.kwh);
+            const promedio  = valores.length > 0
+                ? Math.round(valores.reduce((a, b) => a + b, 0) / valores.length)
+                : 0;
+
+            graficaInstancia = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: etiquetas,
+                    datasets: [
+                        {
+                            label: 'Consumo (kWh)',
+                            data: valores,
+                            backgroundColor: valores.map((v, i) => i === 0 ? '#1e40af' : '#93c5fd'),
+                            borderRadius: 6,
+                            borderSkipped: false,
+                        },
+                        {
+                            label: `Promedio: ${promedio} kWh`,
+                            data: new Array(valores.length).fill(promedio),
+                            type: 'line',
+                            borderColor: '#ef4444',
+                            borderWidth: 2,
+                            borderDash: [5, 5],
+                            pointRadius: 0,
+                            fill: false,
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    plugins: {
+                        legend: { position: 'top' },
+                        tooltip: {
+                            callbacks: {
+                                label: ctx => ` ${ctx.parsed.y} kWh`
+                            }
+                        }
+                    },
+                    scales: {
+                        y: { beginAtZero: true, title: { display: true, text: 'kWh' } },
+                        x: { ticks: { maxRotation: 45 } }
+                    }
+                }
+            });
+        }
+
+        function reiniciar() {
+            document.getElementById('resultado').style.display   = 'none';
+            document.getElementById('alertaError').style.display = 'none';
+            document.getElementById('debugCard').style.display   = 'none';
+            zonaCarga.style.display = 'block';
+            inputArchivo.value = '';
+            if (graficaInstancia) { graficaInstancia.destroy(); graficaInstancia = null; }
+        }
+    </script>
+
+</body>
+</html>
