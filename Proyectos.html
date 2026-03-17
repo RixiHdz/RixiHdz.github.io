@@ -23,7 +23,6 @@
         .zona-carga .icono-carga { font-size: 2.5rem; margin-bottom: 0.75rem; }
         .zona-carga h3 { font-size: 16px; font-weight: 600; margin-bottom: 0.25rem; }
         .zona-carga p { font-size: 13px; color: #888; }
-
         .btn-subir {
             display: inline-block;
             margin-top: 1rem;
@@ -38,9 +37,7 @@
             transition: background 0.2s;
         }
         .btn-subir:hover { background: #333; }
-
         #resultado { display: none; }
-
         .resultado-header {
             display: flex;
             justify-content: space-between;
@@ -48,7 +45,6 @@
             margin-bottom: 1.5rem;
         }
         .resultado-header h2 { font-size: 18px; font-weight: 600; }
-
         .btn-nuevo {
             background: none;
             border: 1px solid #e0e0e0;
@@ -60,7 +56,6 @@
             color: #666;
         }
         .btn-nuevo:hover { background: #f5f5f5; }
-
         .datos-grid {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
@@ -83,7 +78,6 @@
         .dato-valor { font-size: 18px; font-weight: 600; color: #1a1a1a; }
         .dato-valor.verde { color: #166534; }
         .dato-valor.azul  { color: #1e40af; }
-
         .grafica-card {
             background: #ffffff;
             border: 1px solid #e0e0e0;
@@ -93,7 +87,6 @@
         }
         .grafica-card h3 { font-size: 15px; font-weight: 600; margin-bottom: 1.25rem; }
         .grafica-card canvas { max-height: 300px; }
-
         .historial-card {
             background: #ffffff;
             border: 1px solid #e0e0e0;
@@ -103,7 +96,6 @@
             overflow-x: auto;
         }
         .historial-card h3 { font-size: 15px; font-weight: 600; margin-bottom: 1rem; }
-
         table { width: 100%; border-collapse: collapse; font-size: 13px; }
         thead tr { border-bottom: 2px solid #e0e0e0; }
         th {
@@ -118,7 +110,6 @@
         td { padding: 0.6rem 0.75rem; border-bottom: 1px solid #f0f0f0; color: #1a1a1a; }
         tr:last-child td { border-bottom: none; }
         tr.fila-actual td { font-weight: 600; background: #f0fdf4; }
-
         #cargando {
             display: none;
             background: #ffffff;
@@ -138,7 +129,6 @@
             margin: 0 auto 1rem;
         }
         @keyframes girar { to { transform: rotate(360deg); } }
-
         .alerta-error {
             display: none;
             background: #fef2f2;
@@ -149,20 +139,31 @@
             font-size: 13px;
             margin-bottom: 1rem;
         }
-
-        .texto-debug {
+        .debug-card {
             background: #f5f5f5;
             border: 1px solid #e0e0e0;
-            border-radius: 8px;
-            padding: 1rem;
+            border-radius: 12px;
+            padding: 1.25rem;
+            margin-bottom: 2rem;
+            display: none;
+        }
+        .debug-card h3 {
+            font-size: 13px;
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+            color: #666;
+        }
+        .debug-card textarea {
+            width: 100%;
+            height: 150px;
             font-size: 11px;
             font-family: monospace;
-            color: #666;
-            white-space: pre-wrap;
-            max-height: 200px;
-            overflow-y: auto;
-            margin-bottom: 1rem;
-            display: none;
+            border: 1px solid #e0e0e0;
+            border-radius: 8px;
+            padding: 0.5rem;
+            resize: vertical;
+            background: #fff;
+            color: #333;
         }
     </style>
 </head>
@@ -210,11 +211,14 @@
         </div>
 
         <div class="alerta-error" id="alertaError">
-            ⚠️ No se pudieron extraer los datos. Asegúrate de que sea un recibo digital de CFE (no escaneado).
+            ⚠️ No se pudieron extraer los datos. Asegúrate de que sea un recibo digital de CFE.
         </div>
 
-        <!-- Caja de debug — solo visible si hay problemas -->
-        <div class="texto-debug" id="textoDebug"></div>
+        <!-- CAJA DEBUG — muestra el texto extraído para ajustar -->
+        <div class="debug-card" id="debugCard">
+            <h3>🔍 Texto extraído del PDF (cópialo y mándalo para ajustar el código)</h3>
+            <textarea id="textoDebug" readonly></textarea>
+        </div>
 
         <div id="resultado">
             <div class="resultado-header">
@@ -304,7 +308,7 @@
         });
 
         async function procesarPDF(archivo) {
-            // Limpiar datos anteriores
+            // Limpiar todo
             document.getElementById('datNombre').textContent   = '—';
             document.getElementById('datTotal').textContent    = '—';
             document.getElementById('datFecha').textContent    = '—';
@@ -312,8 +316,9 @@
             document.getElementById('datPeriodo').textContent  = '—';
             document.getElementById('datServicio').textContent = '—';
             document.getElementById('tablaHistorial').innerHTML = '';
-            document.getElementById('resultado').style.display = 'none';
+            document.getElementById('resultado').style.display  = 'none';
             document.getElementById('alertaError').style.display = 'none';
+            document.getElementById('debugCard').style.display   = 'none';
             if (graficaInstancia) { graficaInstancia.destroy(); graficaInstancia = null; }
 
             zonaCarga.style.display = 'none';
@@ -323,14 +328,13 @@
                 const arrayBuffer = await archivo.arrayBuffer();
                 const pdf = await pdfjsLib.getDocument({ data: arrayBuffer }).promise;
 
-                // Leer todas las páginas
                 let textoCompleto = '';
                 for (let i = 1; i <= pdf.numPages; i++) {
-                    const pagina   = await pdf.getPage(i);
+                    const pagina    = await pdf.getPage(i);
                     const contenido = await pagina.getTextContent();
-                    const items     = contenido.items;
 
-                    // Ordenar por posición vertical para leer en orden
+                    // Ordenar items por posición para leer en orden correcto
+                    const items = contenido.items;
                     items.sort((a, b) => {
                         const diffY = Math.round(b.transform[5]) - Math.round(a.transform[5]);
                         return diffY !== 0 ? diffY : a.transform[4] - b.transform[4];
@@ -339,8 +343,9 @@
                     textoCompleto += items.map(item => item.str).join(' ') + '\n';
                 }
 
-                // Mostrar texto en debug (útil para ajustar)
-                document.getElementById('textoDebug').textContent = textoCompleto;
+                // Mostrar texto extraído en la caja debug
+                document.getElementById('textoDebug').value = textoCompleto;
+                document.getElementById('debugCard').style.display = 'block';
 
                 const datos = extraerDatos(textoCompleto);
                 mostrarResultados(datos);
@@ -360,37 +365,30 @@
                 kwh: '', periodo: '', noServicio: '', historial: []
             };
 
-            // Nombre
             const regNombre = /([A-ZÁÉÍÓÚÑ]{2,}(?:\s+[A-ZÁÉÍÓÚÑ]{2,}){1,3})/;
             const matchNombre = texto.match(regNombre);
             if (matchNombre) datos.nombre = matchNombre[1].trim();
 
-            // Total a pagar — toma el primer $ que aparece
             const regTotal = /\$\s*(\d{1,6}(?:[.,]\d{2})?)/;
             const matchTotal = texto.match(regTotal);
             if (matchTotal) datos.total = '$' + matchTotal[1];
 
-            // Límite de pago
             const regFecha = /L[IÍ]MITE\s+DE\s+PAGO[:\s]*(\d{1,2}\s+[A-ZÁÉÍÓÚÑA-Za-z]{3,}\s+\d{2,4})/i;
             const matchFecha = texto.match(regFecha);
             if (matchFecha) datos.fechaLimite = matchFecha[1].trim();
 
-            // No. de servicio
-            const regServicio = /(?:NO\.?\s*(?:DE\s*)?SERVICIO|N[oO]\.?\s*SERVICIO)[:\s]*([0-9]{8,15})/i;
+            const regServicio = /(?:NO\.?\s*(?:DE\s*)?SERVICIO)[:\s]*([0-9]{8,15})/i;
             const matchServicio = texto.match(regServicio);
             if (matchServicio) datos.noServicio = matchServicio[1];
 
-            // Periodo facturado
             const regPeriodo = /PERIODO\s+FACTURADO[:\s]*([^\n]{5,35})/i;
             const matchPeriodo = texto.match(regPeriodo);
             if (matchPeriodo) datos.periodo = matchPeriodo[1].trim();
 
-            // kWh consumo
             const regKwh = /Energ[ií]a\s*\(?kWh\)?[^0-9]*(\d{2,4})/i;
             const matchKwh = texto.match(regKwh);
             if (matchKwh) datos.kwh = matchKwh[1];
 
-            // Historial — patrón CFE: "del DD MMM AA al DD MMM AA  NNN  $NNN"
             const regHistorial = /del\s+(\d{1,2}\s+[A-Za-záéíóúÁÉÍÓÚÑñ]{3}\.?\s*\d{2})\s+al\s+(\d{1,2}\s+[A-Za-záéíóúÁÉÍÓÚÑñ]{3}\.?\s*\d{2})\s+(\d{2,4})\s+\$?([\d,]+(?:\.\d{2})?)/gi;
             let matchH;
             while ((matchH = regHistorial.exec(texto)) !== null) {
@@ -401,7 +399,6 @@
                 });
             }
 
-            // Fallback si no encontró historial
             if (datos.historial.length === 0 && datos.kwh) {
                 datos.historial = [{
                     periodo: datos.periodo || 'Periodo actual',
@@ -495,9 +492,9 @@
         }
 
         function reiniciar() {
-            document.getElementById('resultado').style.display = 'none';
+            document.getElementById('resultado').style.display   = 'none';
             document.getElementById('alertaError').style.display = 'none';
-            document.getElementById('textoDebug').style.display = 'none';
+            document.getElementById('debugCard').style.display   = 'none';
             zonaCarga.style.display = 'block';
             inputArchivo.value = '';
             if (graficaInstancia) { graficaInstancia.destroy(); graficaInstancia = null; }
