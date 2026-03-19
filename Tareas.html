@@ -6,58 +6,6 @@
     <title>Tareas — Probabilidad y Estadística</title>
     <link rel="stylesheet" href="vista/style.css">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
-    <style>
-        .ajuste-section { margin-top: 2.5rem; display: none; }
-        .ajuste-section h2 { font-size: 1.2rem; font-weight: 600; margin-bottom: 0.25rem; }
-        .ajuste-section .subtitulo { font-size: 0.875rem; color: #666; margin-bottom: 1.5rem; }
-        .ajuste-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 1rem; }
-        @media (max-width: 600px) { .ajuste-grid { grid-template-columns: 1fr; } }
-        .ajuste-label { display: block; font-size: 0.8rem; font-weight: 600; letter-spacing: 0.05em; text-transform: uppercase; color: #555; margin-bottom: 6px; }
-        .ajuste-textarea { width: 100%; min-height: 72px; resize: vertical; font-family: 'Courier New', monospace; font-size: 13px; padding: 9px 11px; border: 1px solid #d0d0d0; border-radius: 8px; background: #fafafa; color: #222; box-sizing: border-box; transition: border-color 0.15s; }
-        .ajuste-textarea:focus { outline: none; border-color: #3a7bd5; background: #fff; }
-        .ajuste-hint { font-size: 0.75rem; color: #999; margin-top: 4px; }
-        .ajuste-actions { display: flex; gap: 10px; margin-top: 0.75rem; flex-wrap: wrap; }
-        .btn-calcular { padding: 9px 22px; border: none; border-radius: 8px; background: #3a7bd5; color: #fff; font-size: 14px; font-weight: 600; cursor: pointer; transition: background 0.15s, transform 0.1s; }
-        .btn-calcular:hover { background: #2f66b8; }
-        .btn-calcular:active { transform: scale(0.97); }
-        .btn-limpiar { padding: 9px 18px; border: 1px solid #d0d0d0; border-radius: 8px; background: transparent; color: #555; font-size: 14px; cursor: pointer; transition: background 0.15s; }
-        .btn-limpiar:hover { background: #f0f0f0; }
-        .ajuste-error { color: #c0392b; font-size: 13px; margin-top: 6px; display: none; }
-        .ajuste-resultados { display: none; margin-top: 1.5rem; }
-        .metricas-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(120px, 1fr)); gap: 10px; margin-bottom: 1rem; }
-        .metrica-card { background: #f4f6fb; border-radius: 8px; padding: 0.75rem 1rem; }
-        .metrica-label { font-size: 11px; text-transform: uppercase; letter-spacing: 0.06em; color: #888; margin-bottom: 4px; }
-        .metrica-valor { font-size: 1.2rem; font-weight: 600; font-family: 'Courier New', monospace; color: #222; }
-        .ecuacion-box { background: #f4f6fb; border-left: 3px solid #3a7bd5; border-radius: 0 8px 8px 0; padding: 0.75rem 1.25rem; font-size: 1rem; font-weight: 600; font-family: 'Courier New', monospace; color: #222; text-align: center; margin-bottom: 1.25rem; }
-        .chart-wrapper { position: relative; width: 100%; height: 320px; margin-bottom: 1.25rem; }
-        .legend-row { display: flex; gap: 20px; font-size: 12px; color: #666; margin-bottom: 1rem; flex-wrap: wrap; }
-        .legend-dot { display: inline-block; width: 10px; height: 10px; border-radius: 50%; margin-right: 5px; }
-        .legend-line { display: inline-block; width: 18px; height: 3px; border-radius: 2px; margin-right: 5px; vertical-align: middle; }
-        .datos-table-wrap { overflow-x: auto; margin-bottom: 1rem; }
-        .datos-table { border-collapse: collapse; font-size: 13px; min-width: 200px; }
-        .datos-table th { background: #f4f6fb; padding: 5px 14px; text-align: center; font-weight: 600; color: #555; border: 1px solid #e0e0e0; }
-        .datos-table td { padding: 5px 14px; text-align: center; border: 1px solid #e8e8e8; font-family: 'Courier New', monospace; color: #333; }
-        .datos-table tr:nth-child(even) td { background: #fafafa; }
-        .predict-section { border-top: 1px solid #e8e8e8; padding-top: 1rem; }
-        .predict-label { font-size: 0.8rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em; color: #555; margin-bottom: 8px; }
-        .predict-row { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
-        .predict-input { width: 130px; padding: 8px 11px; border: 1px solid #d0d0d0; border-radius: 8px; font-size: 14px; background: #fafafa; color: #222; transition: border-color 0.15s; }
-        .predict-input:focus { outline: none; border-color: #3a7bd5; }
-        .predict-resultado { font-size: 14px; color: #555; display: none; }
-        .predict-resultado strong { font-family: 'Courier New', monospace; color: #222; }
-        .divider-ajuste { border: none; border-top: 1px solid #e8e8e8; margin: 1.5rem 0; }
-        .btn-tarea {
-            display: inline-flex; align-items: center; gap: 10px;
-            padding: 14px 28px; border: none; border-radius: 10px;
-            background: #3a7bd5; color: #fff; font-size: 15px; font-weight: 600;
-            cursor: pointer; transition: background 0.15s, transform 0.1s;
-            margin-top: 1rem;
-        }
-        .btn-tarea:hover { background: #2f66b8; }
-        .btn-tarea:active { transform: scale(0.97); }
-        .btn-tarea .icono { font-size: 18px; }
-        .tareas-vacio { color: #999; font-size: 0.95rem; margin-bottom: 0.5rem; }
-    </style>
 </head>
 <body>
 
@@ -81,17 +29,44 @@
     </nav>
 
     <main>
+
+        <!-- ── TARJETAS DE TAREAS ── -->
         <div class="tareas-header">
             <h2>Mis tareas</h2>
         </div>
 
         <div id="lista-tareas">
-            <p class="tareas-vacio">Selecciona una tarea para comenzar:</p>
-            <button class="btn-tarea" onclick="abrirAjuste()">
-                <span class="icono">📈</span>
-                Ajuste lineal — Máximos y mínimos
-            </button>
+            <div class="tarea-card">
+                <div class="tarea-info">
+                    <h3>Tarea 1 — Medidas de tendencia central</h3>
+                    <p>Unidad 1 · Entrega: pendiente</p>
+                </div>
+                <span class="badge badge-pendiente">Pendiente</span>
+            </div>
+            <div class="tarea-card">
+                <div class="tarea-info">
+                    <h3>Tarea 2 — Ejercicios de probabilidad</h3>
+                    <p>Unidad 2 · Entrega: 10 mar 2026</p>
+                </div>
+                <span class="badge badge-entregada">Entregada</span>
+            </div>
+            <div class="tarea-card">
+                <div class="tarea-info">
+                    <h3>Tarea 3 — Ajuste lineal por mínimos cuadrados</h3>
+                    <p>Unidad 3 · Herramienta interactiva abajo</p>
+                </div>
+                <span class="badge badge-entregada">Entregada</span>
+            </div>
         </div>
+
+        <hr class="divider-ajuste" style="margin: 2rem 0;">
+
+        <!-- ── HERRAMIENTA DE REGRESIÓN ── -->
+        <p class="tareas-vacio">Herramienta interactiva:</p>
+        <button class="btn-tarea" onclick="abrirAjuste()">
+            <span class="icono">📈</span>
+            Ajuste lineal — Mínimos cuadrados
+        </button>
 
         <hr class="divider-ajuste" id="hrAjuste" style="display:none;">
 
@@ -121,7 +96,6 @@
 
             <div id="ajusteResultados" class="ajuste-resultados">
                 <hr class="divider-ajuste">
-
                 <div class="metricas-grid">
                     <div class="metrica-card">
                         <div class="metrica-label">Pendiente m</div>
@@ -132,8 +106,8 @@
                         <div class="metrica-valor" id="metB">—</div>
                     </div>
                     <div class="metrica-card">
-                        <div class="metrica-label">R²</div>
                         <div class="metrica-valor" id="metR2">—</div>
+                        <div class="metrica-label">R²</div>
                     </div>
                     <div class="metrica-card">
                         <div class="metrica-label">Puntos n</div>
@@ -155,7 +129,13 @@
                 <div class="datos-table-wrap">
                     <table class="datos-table">
                         <thead>
-                            <tr><th>i</th><th>x</th><th>y</th><th>ŷ</th><th>residuo</th></tr>
+                            <tr>
+                                <th>i</th>
+                                <th>x</th>
+                                <th>y</th>
+                                <th>ŷ</th>
+                                <th>residuo</th>
+                            </tr>
                         </thead>
                         <tbody id="datosTbody"></tbody>
                     </table>
@@ -164,12 +144,16 @@
                 <div class="predict-section">
                     <p class="predict-label">Predicción puntual</p>
                     <div class="predict-row">
-                        <input class="predict-input" type="number" id="xPredict" placeholder="Introduce x" oninput="predecirY()">
-                        <div class="predict-resultado" id="predictOut">→ ŷ = <strong id="predictVal">—</strong></div>
+                        <input class="predict-input" type="number" id="xPredict"
+                               placeholder="Introduce x" oninput="predecirY()">
+                        <div class="predict-resultado" id="predictOut">
+                            → ŷ = <strong id="predictVal">—</strong>
+                        </div>
                     </div>
                 </div>
             </div>
         </section>
+
     </main>
 
     <footer>
@@ -177,143 +161,7 @@
         <p>Probabilidad y Estadística · UMSNH · 2026</p>
     </footer>
 
-    <script>
-        let _chart = null;
-        let _m = null, _b = null;
-
-        function abrirAjuste() {
-            document.getElementById('ajusteSection').style.display = 'block';
-            document.getElementById('hrAjuste').style.display = 'block';
-            document.getElementById('ajusteSection').scrollIntoView({ behavior: 'smooth', block: 'start' });
-        }
-
-        function parsearValores(str) {
-            return str.split(/[\s,;]+/).filter(s => s.trim() !== '').map(Number);
-        }
-
-        function calcularAjuste() {
-            const errEl = document.getElementById('ajusteError');
-            errEl.style.display = 'none';
-
-            const x = parsearValores(document.getElementById('xInput').value);
-            const y = parsearValores(document.getElementById('yInput').value);
-
-            if (x.length < 3 || y.length < 3) {
-                errEl.textContent = 'Se necesitan al menos 3 valores en cada campo.';
-                errEl.style.display = 'block'; return;
-            }
-            if (x.length !== y.length) {
-                errEl.textContent = `X tiene ${x.length} valores e Y tiene ${y.length}. Deben ser iguales.`;
-                errEl.style.display = 'block'; return;
-            }
-            if (x.some(isNaN) || y.some(isNaN)) {
-                errEl.textContent = 'Hay valores no numéricos. Revisa los datos.';
-                errEl.style.display = 'block'; return;
-            }
-
-            const n = x.length;
-            const sumX  = x.reduce((a, v) => a + v, 0);
-            const sumY  = y.reduce((a, v) => a + v, 0);
-            const sumXY = x.reduce((a, xi, i) => a + xi * y[i], 0);
-            const sumX2 = x.reduce((a, xi) => a + xi * xi, 0);
-
-            const m = (n * sumXY - sumX * sumY) / (n * sumX2 - sumX * sumX);
-            const b = (sumY - m * sumX) / n;
-
-            const yMedia = sumY / n;
-            const ssTot = y.reduce((a, yi) => a + (yi - yMedia) ** 2, 0);
-            const ssRes = y.reduce((a, yi, i) => a + (yi - (m * x[i] + b)) ** 2, 0);
-            const r2 = 1 - ssRes / ssTot;
-
-            _m = m; _b = b;
-
-            document.getElementById('metM').textContent  = m.toFixed(4);
-            document.getElementById('metB').textContent  = b.toFixed(4);
-            document.getElementById('metR2').textContent = r2.toFixed(4);
-            document.getElementById('metN').textContent  = n;
-
-            const signo = b >= 0 ? '+' : '−';
-            document.getElementById('ecuacionBox').textContent =
-                `y = ${m.toFixed(4)} x ${signo} ${Math.abs(b).toFixed(4)}`;
-
-            const tbody = document.getElementById('datosTbody');
-            tbody.innerHTML = '';
-            x.forEach((xi, i) => {
-                const yi_hat = m * xi + b;
-                const res = y[i] - yi_hat;
-                const tr = document.createElement('tr');
-                tr.innerHTML = `<td>${i + 1}</td><td>${xi}</td><td>${y[i]}</td>
-                                <td>${yi_hat.toFixed(4)}</td>
-                                <td style="color:${Math.abs(res) > 1 ? '#c0392b' : '#27ae60'}">${res.toFixed(4)}</td>`;
-                tbody.appendChild(tr);
-            });
-
-            const xMin = Math.min(...x), xMax = Math.max(...x);
-            if (_chart) _chart.destroy();
-            _chart = new Chart(document.getElementById('ajusteChart'), {
-                type: 'scatter',
-                data: {
-                    datasets: [
-                        {
-                            label: 'Datos',
-                            data: x.map((xi, i) => ({ x: xi, y: y[i] })),
-                            backgroundColor: '#3a7bd5',
-                            pointRadius: 6,
-                            pointHoverRadius: 8
-                        },
-                        {
-                            label: 'Ajuste',
-                            data: [{ x: xMin, y: m * xMin + b }, { x: xMax, y: m * xMax + b }],
-                            type: 'line',
-                            borderColor: '#e07030',
-                            borderWidth: 2.5,
-                            pointRadius: 0,
-                            fill: false,
-                            tension: 0
-                        }
-                    ]
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    plugins: {
-                        legend: { display: false },
-                        tooltip: {
-                            callbacks: {
-                                label: ctx => `(${ctx.parsed.x}, ${ctx.parsed.y.toFixed(4)})`
-                            }
-                        }
-                    },
-                    scales: {
-                        x: { grid: { color: 'rgba(0,0,0,0.06)' }, ticks: { color: '#777', font: { size: 12 } } },
-                        y: { grid: { color: 'rgba(0,0,0,0.06)' }, ticks: { color: '#777', font: { size: 12 } } }
-                    }
-                }
-            });
-
-            document.getElementById('ajusteResultados').style.display = 'block';
-            predecirY();
-        }
-
-        function predecirY() {
-            const xv = parseFloat(document.getElementById('xPredict').value);
-            const out = document.getElementById('predictOut');
-            if (isNaN(xv) || _m === null) { out.style.display = 'none'; return; }
-            document.getElementById('predictVal').textContent = (_m * xv + _b).toFixed(4);
-            out.style.display = 'inline';
-        }
-
-        function limpiarAjuste() {
-            document.getElementById('xInput').value = '';
-            document.getElementById('yInput').value = '';
-            document.getElementById('xPredict').value = '';
-            document.getElementById('ajusteError').style.display = 'none';
-            document.getElementById('ajusteResultados').style.display = 'none';
-            document.getElementById('predictOut').style.display = 'none';
-            if (_chart) { _chart.destroy(); _chart = null; }
-            _m = null; _b = null;
-        }
-    </script>
+    <script src="funciones/regresion.js"></script>
 
 </body>
 </html>

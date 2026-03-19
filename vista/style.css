@@ -21,18 +21,15 @@ header {
     flex-wrap: wrap;
     gap: 1rem;
 }
-
 .header-info h1 {
     font-size: 20px;
     font-weight: 600;
 }
-
 .header-info p {
     font-size: 13px;
     color: #666;
     margin-top: 4px;
 }
-
 .header-badge {
     background: #f5f5f5;
     border: 1px solid #e0e0e0;
@@ -41,13 +38,11 @@ header {
     font-size: 13px;
     text-align: right;
 }
-
 .header-badge span {
     display: block;
     color: #888;
     font-size: 12px;
 }
-
 .header-badge strong {
     font-weight: 600;
 }
@@ -60,7 +55,6 @@ nav {
     display: flex;
     gap: 0;
 }
-
 nav a {
     text-decoration: none;
     border-bottom: 2px solid transparent;
@@ -69,11 +63,9 @@ nav a {
     color: #888;
     transition: color 0.2s;
 }
-
 nav a:hover {
     color: #1a1a1a;
 }
-
 nav a.activo {
     color: #1a1a1a;
     border-bottom-color: #1a1a1a;
@@ -95,13 +87,11 @@ main {
     padding: 2rem;
     margin-bottom: 1.5rem;
 }
-
 .bienvenida h2 {
     font-size: 18px;
     font-weight: 600;
     margin-bottom: 0.5rem;
 }
-
 .bienvenida p {
     font-size: 14px;
     color: #555;
@@ -115,14 +105,12 @@ main {
     gap: 1rem;
     margin-top: 1.5rem;
 }
-
 .card {
     background: #ffffff;
     border: 1px solid #e0e0e0;
     border-radius: 12px;
     padding: 1.25rem;
 }
-
 .card-icon {
     width: 36px;
     height: 36px;
@@ -133,20 +121,29 @@ main {
     font-size: 16px;
     margin-bottom: 0.75rem;
 }
-
 .icono-azul     { background: #dbeafe; }
 .icono-verde    { background: #dcfce7; }
 .icono-amarillo { background: #fef9c3; }
-
 .card h3 {
     font-size: 15px;
     font-weight: 600;
     margin-bottom: 4px;
 }
-
 .card p {
     font-size: 13px;
     color: #666;
+}
+
+/* ── CARDS CLICKEABLES ── */
+a.card {
+    text-decoration: none;
+    color: inherit;
+    display: block;
+    transition: transform 0.15s, box-shadow 0.15s;
+}
+a.card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
 }
 
 /* ── TEMARIO ── */
@@ -156,7 +153,6 @@ main {
     flex-direction: column;
     gap: 0.5rem;
 }
-
 .tema-item {
     background: #ffffff;
     border: 1px solid #e0e0e0;
@@ -166,7 +162,6 @@ main {
     align-items: center;
     gap: 1rem;
 }
-
 .tema-num {
     width: 28px;
     height: 28px;
@@ -179,12 +174,10 @@ main {
     font-weight: 600;
     flex-shrink: 0;
 }
-
 .tema-titulo {
     font-size: 14px;
     font-weight: 600;
 }
-
 .tema-sub {
     font-size: 12px;
     color: #888;
@@ -198,12 +191,10 @@ main {
     align-items: center;
     margin-bottom: 1rem;
 }
-
 .tareas-header h2 {
     font-size: 18px;
     font-weight: 600;
 }
-
 .tarea-card {
     background: #ffffff;
     border: 1px solid #e0e0e0;
@@ -214,30 +205,25 @@ main {
     justify-content: space-between;
     align-items: center;
 }
-
 .tarea-info h3 {
     font-size: 14px;
     font-weight: 600;
     margin-bottom: 4px;
 }
-
 .tarea-info p {
     font-size: 12px;
     color: #888;
 }
-
 .badge {
     font-size: 11px;
     padding: 4px 12px;
     border-radius: 99px;
     font-weight: 600;
 }
-
 .badge-pendiente {
     background: #fef9c3;
     color: #854d0e;
 }
-
 .badge-entregada {
     background: #dcfce7;
     color: #166534;
@@ -252,23 +238,10 @@ footer {
     border-top: 1px solid #e0e0e0;
     margin-top: 2rem;
 }
-
 footer p + p {
     margin-top: 4px;
 }
 
-/* ── CARDS CLICKEABLES ── */
-a.card {
-    text-decoration: none;
-    color: inherit;
-    display: block;
-    transition: transform 0.15s, box-shadow 0.15s;
-}
-
-a.card:hover {
-    transform: translateY(-3px);
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
-}
 /* ══════════════════════════════════
    PROYECTOS — Lector de Recibo CFE
    ══════════════════════════════════ */
@@ -423,9 +396,10 @@ a.card:hover {
 }
 .historial-card h3 { font-size: 15px; font-weight: 600; margin-bottom: 1rem; }
 
-table { width: 100%; border-collapse: collapse; font-size: 13px; }
-thead tr { border-bottom: 2px solid #e0e0e0; }
-th {
+/* Tabla historial CFE — con clase específica para no chocar con tabla de regresión */
+.historial-card table { width: 100%; border-collapse: collapse; font-size: 13px; }
+.historial-card thead tr { border-bottom: 2px solid #e0e0e0; }
+.historial-card th {
     text-align: left;
     padding: 0.5rem 0.75rem;
     color: #888;
@@ -434,6 +408,70 @@ th {
     text-transform: uppercase;
     letter-spacing: 0.05em;
 }
-td { padding: 0.6rem 0.75rem; border-bottom: 1px solid #f0f0f0; color: #1a1a1a; }
-tr:last-child td { border-bottom: none; }
-tr.fila-actual td { font-weight: 600; background: #f0fdf4; }
+.historial-card td { padding: 0.6rem 0.75rem; border-bottom: 1px solid #f0f0f0; color: #1a1a1a; }
+.historial-card tr:last-child td { border-bottom: none; }
+.historial-card tr.fila-actual td { font-weight: 600; background: #f0fdf4; }
+
+/* ══════════════════════════════════
+   TAREAS — Regresión Lineal
+   ══════════════════════════════════ */
+
+.ajuste-section { margin-top: 2.5rem; display: none; }
+.ajuste-section h2 { font-size: 1.2rem; font-weight: 600; margin-bottom: 0.25rem; }
+.ajuste-section .subtitulo { font-size: 0.875rem; color: #666; margin-bottom: 1.5rem; }
+
+.ajuste-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 1rem; }
+@media (max-width: 600px) { .ajuste-grid { grid-template-columns: 1fr; } }
+
+.ajuste-label { display: block; font-size: 0.8rem; font-weight: 600; letter-spacing: 0.05em; text-transform: uppercase; color: #555; margin-bottom: 6px; }
+
+.ajuste-textarea { width: 100%; min-height: 72px; resize: vertical; font-family: 'Courier New', monospace; font-size: 13px; padding: 9px 11px; border: 1px solid #d0d0d0; border-radius: 8px; background: #fafafa; color: #222; box-sizing: border-box; transition: border-color 0.15s; }
+.ajuste-textarea:focus { outline: none; border-color: #3a7bd5; background: #fff; }
+.ajuste-hint { font-size: 0.75rem; color: #999; margin-top: 4px; }
+
+.ajuste-actions { display: flex; gap: 10px; margin-top: 0.75rem; flex-wrap: wrap; }
+
+.btn-calcular { padding: 9px 22px; border: none; border-radius: 8px; background: #3a7bd5; color: #fff; font-size: 14px; font-weight: 600; cursor: pointer; transition: background 0.15s, transform 0.1s; }
+.btn-calcular:hover { background: #2f66b8; }
+.btn-calcular:active { transform: scale(0.97); }
+
+.btn-limpiar { padding: 9px 18px; border: 1px solid #d0d0d0; border-radius: 8px; background: transparent; color: #555; font-size: 14px; cursor: pointer; transition: background 0.15s; }
+.btn-limpiar:hover { background: #f0f0f0; }
+
+.ajuste-error { color: #c0392b; font-size: 13px; margin-top: 6px; display: none; }
+.ajuste-resultados { display: none; margin-top: 1.5rem; }
+
+.metricas-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(120px, 1fr)); gap: 10px; margin-bottom: 1rem; }
+.metrica-card { background: #f4f6fb; border-radius: 8px; padding: 0.75rem 1rem; }
+.metrica-label { font-size: 11px; text-transform: uppercase; letter-spacing: 0.06em; color: #888; margin-bottom: 4px; }
+.metrica-valor { font-size: 1.2rem; font-weight: 600; font-family: 'Courier New', monospace; color: #222; }
+
+.ecuacion-box { background: #f4f6fb; border-left: 3px solid #3a7bd5; border-radius: 0 8px 8px 0; padding: 0.75rem 1.25rem; font-size: 1rem; font-weight: 600; font-family: 'Courier New', monospace; color: #222; text-align: center; margin-bottom: 1.25rem; }
+
+.chart-wrapper { position: relative; width: 100%; height: 320px; margin-bottom: 1.25rem; }
+
+.legend-row { display: flex; gap: 20px; font-size: 12px; color: #666; margin-bottom: 1rem; flex-wrap: wrap; }
+.legend-dot { display: inline-block; width: 10px; height: 10px; border-radius: 50%; margin-right: 5px; }
+.legend-line { display: inline-block; width: 18px; height: 3px; border-radius: 2px; margin-right: 5px; vertical-align: middle; }
+
+.datos-table-wrap { overflow-x: auto; margin-bottom: 1rem; }
+.datos-table { border-collapse: collapse; font-size: 13px; min-width: 200px; width: 100%; }
+.datos-table th { background: #f4f6fb; padding: 5px 14px; text-align: center; font-weight: 600; color: #555; border: 1px solid #e0e0e0; }
+.datos-table td { padding: 5px 14px; text-align: center; border: 1px solid #e8e8e8; font-family: 'Courier New', monospace; color: #333; }
+.datos-table tr:nth-child(even) td { background: #fafafa; }
+
+.predict-section { border-top: 1px solid #e8e8e8; padding-top: 1rem; }
+.predict-label { font-size: 0.8rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em; color: #555; margin-bottom: 8px; }
+.predict-row { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+.predict-input { width: 130px; padding: 8px 11px; border: 1px solid #d0d0d0; border-radius: 8px; font-size: 14px; background: #fafafa; color: #222; transition: border-color 0.15s; }
+.predict-input:focus { outline: none; border-color: #3a7bd5; }
+.predict-resultado { font-size: 14px; color: #555; display: none; }
+.predict-resultado strong { font-family: 'Courier New', monospace; color: #222; }
+
+.divider-ajuste { border: none; border-top: 1px solid #e8e8e8; margin: 1.5rem 0; }
+
+.btn-tarea { display: inline-flex; align-items: center; gap: 10px; padding: 14px 28px; border: none; border-radius: 10px; background: #3a7bd5; color: #fff; font-size: 15px; font-weight: 600; cursor: pointer; transition: background 0.15s, transform 0.1s; margin-top: 1rem; }
+.btn-tarea:hover { background: #2f66b8; }
+.btn-tarea:active { transform: scale(0.97); }
+.btn-tarea .icono { font-size: 18px; }
+.tareas-vacio { color: #999; font-size: 0.95rem; margin-bottom: 0.5rem; }
